@@ -14,6 +14,7 @@ All data in `localStorage`. Dark mode, mobile-first, Service Worker offline supp
 ```
 fasttrack.html           ← v1.0  (branch: master)
 fasttrack-v1.1.html      ← v1.1  (branch: v1.1-profile-online-edittime)
+fasttrack-v1.2.html      ← v1.2  (branch: v1.2-push-notifications)  ← AKTIVAN
 CLAUDE.md                ← this file, always auto-loaded
 CLAUDE_LESSONS_LEARNED.md ← ARCHIVED — do not auto-read, see note inside
 ```
@@ -31,6 +32,8 @@ CLAUDE_LESSONS_LEARNED.md ← ARCHIVED — do not auto-read, see note inside
 | `ft_checkins` | `[{ datetime, weight, bodyFat, id }, ...]` |
 | `ft_done` | Completed fast data + checkins snapshot |
 | `ft_quote` | `{ text, author, ts }` — online quote, cache 6h |
+| `ft_notif` | `{ enabled, checkinHour, milestones }` — notification settings |
+| `ft_lphase` | `number` — last notified phase ID (za milestone detection) |
 
 ---
 
@@ -94,20 +97,17 @@ Token limit prekida razgovor bez upozorenja. Sljedeća sesija ne zna ništa.
 
 ## Current State
 
-**Aktivna grana:** `v1.1-profile-online-edittime`
-**Zadnji commit:** `v1.1.0 — Editable profile, editable fast start time, online quotes`
+**Aktivna grana:** `v1.2-push-notifications`
+**Zadnji commit:** `v1.2.0 — Push notifications`
 
-### Što je implementirano (v1.1)
-- ✅ Editable profil: ime, dob, spol, visina (setup + edit modal u Data tabu)
-- ✅ Editable fast start time (datetime-local, podržava prošle datume)
-- ✅ Realni timer D:H:M koji se ažurira svakih 10s
-- ✅ Online citati: Quotable.io + ZenQuotes fallback, 6h cache
-- ✅ Phase timeline s real-time highlighting i pulsing dot animacijom
-- ✅ Motivacijski tekst po fazi s biološkim obrazloženjem
-- ✅ End-of-fast report: weight delta, body fat delta, fat/lean breakdown, kcal burned
-- ✅ SVG weight chart, CSV export, Reset
-- ✅ PWA: inline blob SW, offline ready
-- ✅ Git inicijaliziran, v1.0 na master, v1.1 na feature branch
+### Što je implementirano (v1.2)
+- ✅ Sve iz v1.1 +
+- ✅ Push notifikacije: jutarnji check-in podsjetnik (6/7/8/9h, user bira)
+- ✅ Phase milestone alert (fires kad se promijeni faza, dok je fast aktivan)
+- ✅ Permission request flow s graceful fallback porukom
+- ✅ Notification settings u Data tabu (enable/disable, toggle milestones)
+- ✅ SW message handler za delayed showNotification
+- ⚠️ Zahtijeva HTTPS ili Add to Home Screen (file:// ne podržava SW push)
 
 ---
 
@@ -115,7 +115,7 @@ Token limit prekida razgovor bez upozorenja. Sljedeća sesija ne zna ništa.
 
 | Prioritet | Verzija | Feature |
 |-----------|---------|---------|
-| 🥇 | v1.2 | Push notifikacije (morning check-in reminder, phase milestone alerts) |
+| ~~🥇~~ | ~~v1.2~~ | ~~Push notifikacije~~ ✅ Done |
 | 🥇 | v1.3 | Google Fit / Health Connect API → auto-import Xiaomi Scale 2 podataka |
 | 🥈 | v1.4 | Gamifikacija / badges (12h, 24h, 48h, 72h, 5d achievements) |
 | 🥈 | v1.5 | Wellbeing dnevnik po check-inu (energija, glad, mentalna jasnoća 1–5) |
