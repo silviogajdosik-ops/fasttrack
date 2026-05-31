@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#08080f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="FastTrack — Personal fasting journey tracker">
+<title>⚡ FastTrack</title>
+<style>
+/* ===== RESET & VARIABLES ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #08080f;
+  --surf:       #11111c;
+  --surf2:      #191926;
+  --surf3:      #222235;
+  --border:     #2a2a40;
+  --border2:    #3a3a55;
+
+  --cyan:       #00d4ff;
+  --cyan-dim:   rgba(0,212,255,.12);
+  --purple:     #8b5cf6;
+  --orange:     #ff7043;
+  --green:      #00e676;
+  --gold:       #ffd740;
+  --red:        #ff4569;
+
+  --text:       #eeeeff;
+  --text2:      #9999bb;
+  --text3:      #55556a;
+
+  /* phase palette */
+  --p0: #55556a;
+  --p1: #ffd740;
+  --p2: #ff7043;
+  --p3: #00d4ff;
+  --p4: #8b5cf6;
+  --p5: #00e676;
+
+  --r:    16px;
+  --r-sm: 10px;
+  --shadow: 0 8px 32px rgba(0,0,0,.5);
+}
+
+html { font-size: 16px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ===== SCREENS ===== */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ===== SETUP ===== */
+#setup-screen {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  text-align: center;
+}
+.setup-glow {
+  font-size: 72px;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 0 24px var(--cyan));
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-8px)}
+}
+.setup-title {
+  font-size: 2.4rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--cyan), var(--purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 10px;
+}
+.setup-sub {
+  color: var(--text2);
+  font-size: .95rem;
+  line-height: 1.7;
+  margin-bottom: 40px;
+}
+.setup-card {
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 24px;
+  width: 100%;
+  max-width: 380px;
+  margin-bottom: 16px;
+}
+.profile-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: .9rem;
+}
+.profile-row:last-child { border-bottom: none; }
+.profile-row span:first-child { color: var(--text2); }
+.profile-row span:last-child { color: var(--cyan); font-weight: 600; }
+
+/* ===== INPUTS ===== */
+.inp-group { margin-bottom: 14px; }
+.inp-label {
+  display: block;
+  font-size: .7rem;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  margin-bottom: 6px;
+}
+input[type=text], input[type=number], input[type=datetime-local] {
+  width: 100%;
+  background: var(--surf3);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-size: 1rem;
+  padding: 13px 15px;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+input:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 3px var(--cyan-dim);
+}
+input[type=datetime-local]::-webkit-calendar-picker-indicator { filter: invert(.5); }
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px; width: 100%; padding: 15px 20px;
+  border-radius: var(--r-sm);
+  font-size: .95rem; font-weight: 700;
+  cursor: pointer; border: none;
+  transition: transform .15s, box-shadow .15s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.btn:active { transform: scale(.97); }
+.btn-primary {
+  background: linear-gradient(135deg, var(--cyan), var(--purple));
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(0,212,255,.25);
+}
+.btn-primary:active { box-shadow: 0 2px 12px rgba(0,212,255,.2); }
+.btn-success {
+  background: linear-gradient(135deg, var(--green), #00c853);
+  color: #08080f;
+  box-shadow: 0 4px 20px rgba(0,230,118,.25);
+}
+.btn-danger {
+  background: linear-gradient(135deg, var(--red), #cc0033);
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(255,69,105,.25);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--text2);
+  border: 1.5px solid var(--border);
+}
+.btn-ghost:hover { border-color: var(--border2); color: var(--text); }
+.btn-sm { padding: 10px 16px; font-size: .85rem; }
+
+/* ===== HEADER ===== */
+.app-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px 12px;
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(8,8,15,.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+.brand { display: flex; align-items: center; gap: 8px; }
+.brand-icon { font-size: 1.3rem; filter: drop-shadow(0 0 8px var(--cyan)); }
+.brand-name {
+  font-size: 1.05rem; font-weight: 900;
+  background: linear-gradient(135deg, var(--cyan), var(--purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.header-right { display: flex; gap: 6px; }
+.hbtn {
+  background: var(--surf2); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text2);
+  font-size: .72rem; padding: 5px 11px; cursor: pointer;
+  transition: all .2s;
+}
+.hbtn:hover { color: var(--text); border-color: var(--border2); }
+
+/* ===== BOTTOM NAV ===== */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 480px;
+  background: rgba(17,17,28,.95);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  display: flex; z-index: 200;
+}
+.nav-btn {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; gap: 3px;
+  padding: 9px 6px; cursor: pointer;
+  color: var(--text3); font-size: .62rem;
+  text-transform: uppercase; letter-spacing: .06em;
+  background: none; border: none;
+  transition: color .2s;
+}
+.nav-btn.active { color: var(--cyan); }
+.nav-btn .ni { font-size: 1.25rem; }
+
+/* ===== LAYOUT ===== */
+#app { max-width: 480px; margin: 0 auto; padding-bottom: 90px; }
+.tab { display: none; }
+.tab.active { display: block; }
+
+.pad { padding: 18px 18px 0; }
+.dash { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+
+/* ===== CARD ===== */
+.card {
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 20px;
+}
+.card-label {
+  font-size: .68rem; color: var(--text3);
+  text-transform: uppercase; letter-spacing: .14em;
+  margin-bottom: 14px;
+}
+
+/* ===== TIMER ===== */
+.timer-card {
+  background: var(--surf);
+  border-radius: var(--r);
+  padding: 26px 20px 22px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+.timer-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: var(--r);
+  background: linear-gradient(135deg, var(--cyan), var(--purple));
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask-composite: exclude;
+  padding: 1.5px;
+  opacity: .5;
+  pointer-events: none;
+}
+.timer-lbl {
+  font-size: .68rem; color: var(--text3);
+  text-transform: uppercase; letter-spacing: .18em;
+  margin-bottom: 14px;
+}
+.timer-row {
+  display: flex; justify-content: center; align-items: flex-start; gap: 2px;
+  margin-bottom: 14px;
+}
+.t-unit { display: flex; flex-direction: column; align-items: center; min-width: 70px; }
+.t-val {
+  font-size: 3.4rem; font-weight: 900; line-height: 1;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(135deg, var(--cyan), var(--purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.t-sep { font-size: 2.8rem; font-weight: 900; color: var(--text3); line-height: 1; margin-top: 3px; }
+.t-lbl { font-size: .58rem; color: var(--text3); text-transform: uppercase; letter-spacing: .1em; margin-top: 4px; }
+.phase-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 100px; padding: 5px 14px;
+  font-size: .78rem; font-weight: 700;
+  border: 1.5px solid currentColor;
+  background: rgba(0,0,0,.3);
+  transition: color .6s, border-color .6s;
+  margin-bottom: 12px;
+}
+.started-txt { font-size: .75rem; color: var(--text3); }
+.phase-bar { margin-top: 14px; height: 3px; background: var(--surf3); border-radius: 100px; overflow: hidden; }
+.phase-bar-fill {
+  height: 100%; border-radius: 100px;
+  transition: width 1s linear, background .6s;
+}
+
+/* ===== MOTIVATION ===== */
+.motiv-card { background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); padding: 20px; }
+.motiv-top { font-size: .68rem; color: var(--text3); text-transform: uppercase; letter-spacing: .14em; margin-bottom: 10px; }
+.motiv-title { font-size: 1rem; font-weight: 700; margin-bottom: 8px; line-height: 1.4; }
+.motiv-body { font-size: .875rem; color: var(--text2); line-height: 1.65; }
+.motiv-sci {
+  font-size: .775rem; color: var(--text3); line-height: 1.55;
+  margin-top: 12px; padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+/* ===== TIMELINE ===== */
+.timeline-wrap { padding-left: 22px; position: relative; }
+.timeline-wrap::before {
+  content: ''; position: absolute;
+  left: 7px; top: 10px; bottom: 10px;
+  width: 2px; background: var(--border);
+}
+.tl-item {
+  position: relative; margin-bottom: 22px;
+  opacity: .3; transition: opacity .5s;
+}
+.tl-item.reached { opacity: .7; }
+.tl-item.current { opacity: 1; }
+.tl-item:last-child { margin-bottom: 0; }
+.tl-dot {
+  position: absolute; left: -19px; top: 5px;
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--surf); z-index: 1;
+  transition: background .5s, border-color .5s, box-shadow .5s;
+}
+.tl-item.reached .tl-dot, .tl-item.current .tl-dot {
+  background: currentColor; border-color: currentColor;
+}
+.tl-item.current .tl-dot {
+  box-shadow: 0 0 12px currentColor;
+  animation: dotpulse 1.8s ease-in-out infinite;
+}
+@keyframes dotpulse {
+  0%,100%{box-shadow: 0 0 6px currentColor}
+  50%{box-shadow: 0 0 18px currentColor, 0 0 32px currentColor}
+}
+.tl-range { font-size: .65rem; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 2px; }
+.tl-name { font-size: .9rem; font-weight: 700; margin-bottom: 2px; }
+.tl-desc { font-size: .78rem; color: var(--text2); line-height: 1.45; }
+
+/* ===== START SCREEN ===== */
+.start-hero {
+  background: var(--surf); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 34px 24px; text-align: center;
+}
+.sh-icon { font-size: 52px; margin-bottom: 16px; display: block; filter: drop-shadow(0 0 20px var(--cyan)); }
+.sh-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 8px; }
+.sh-sub { color: var(--text2); font-size: .875rem; line-height: 1.65; margin-bottom: 24px; }
+.action-col { display: flex; flex-direction: column; gap: 10px; }
+
+/* ===== LAST CHECK-IN ===== */
+.stats-row { display: flex; gap: 10px; }
+.stat-box {
+  flex: 1; background: var(--surf2); border-radius: var(--r-sm); padding: 14px;
+  text-align: center; border: 1px solid var(--border);
+}
+.stat-v { font-size: 1.35rem; font-weight: 800; }
+.stat-l { font-size: .65rem; color: var(--text3); margin-top: 2px; }
+
+/* ===== CHECK-IN SCREEN ===== */
+.screen-hd { padding: 18px 18px 4px; }
+.screen-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 4px; }
+.screen-sub { font-size: .85rem; color: var(--text2); }
+.form-pad { padding: 14px 18px; }
+.history-list { margin-top: 14px; }
+.hist-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 12px; background: var(--surf2); border-radius: var(--r-sm);
+  margin-bottom: 6px; font-size: .83rem;
+}
+.hist-item .hd { color: var(--text2); flex: 1; }
+.hist-item .hw { font-weight: 700; color: var(--cyan); margin: 0 10px; }
+.hist-item .hf { font-weight: 700; color: var(--orange); }
+.sect-lbl { font-size: .68rem; color: var(--text3); text-transform: uppercase; letter-spacing: .14em; margin-bottom: 10px; }
+
+/* ===== REPORT ===== */
+.report-hero {
+  background: linear-gradient(160deg, var(--surf2), var(--surf));
+  border: 1px solid var(--border); border-radius: var(--r);
+  padding: 30px 24px; text-align: center;
+}
+.rh-icon { font-size: 52px; margin-bottom: 12px; display: block; }
+.rh-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 6px; }
+.rh-dur {
+  font-size: 2rem; font-weight: 900;
+  background: linear-gradient(135deg, var(--cyan), var(--purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; margin: 10px 0 6px;
+}
+.rh-sub { color: var(--text2); font-size: .875rem; }
+
+.compare-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+  font-size: .875rem;
+}
+.compare-row:last-child { border-bottom: none; padding-bottom: 0; }
+.c-lbl { color: var(--text2); flex: 1; }
+.c-vals { display: flex; align-items: center; gap: 7px; flex-shrink: 0; }
+.c-from { color: var(--text3); }
+.c-arr { color: var(--text3); font-size: .75rem; }
+.c-to { font-weight: 700; color: var(--green); }
+.c-diff { font-size: .75rem; color: var(--green); }
+
+.bk-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; background: var(--surf2);
+  border-radius: var(--r-sm); margin-bottom: 8px;
+}
+.bk-item:last-child { margin-bottom: 0; }
+.bk-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.bk-lbl { flex: 1; font-size: .85rem; color: var(--text2); }
+.bk-val { font-weight: 700; font-size: .9rem; }
+.bk-pct { color: var(--text3); font-weight: 400; font-size: .8rem; }
+
+.chart-wrap {
+  background: var(--surf2); border-radius: var(--r-sm);
+  padding: 14px 10px 8px; overflow: hidden;
+}
+.chart-wrap svg { width: 100%; height: auto; display: block; }
+
+/* ===== DATA SCREEN ===== */
+.info-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 9px 0; border-bottom: 1px solid var(--border);
+  font-size: .875rem;
+}
+.info-row:last-child { border-bottom: none; }
+.info-row .il { color: var(--text2); }
+.info-row .iv { font-weight: 600; }
+
+/* ===== MODAL ===== */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.72);
+  backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+  z-index: 300; display: flex; align-items: flex-end; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity .25s;
+}
+.overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: var(--r) var(--r) 0 0;
+  padding: 28px 22px 48px;
+  width: 100%; max-width: 480px;
+  transform: translateY(100%);
+  transition: transform .3s cubic-bezier(.34,1.4,.64,1);
+}
+.overlay.open .modal { transform: translateY(0); }
+.modal-pip { width: 36px; height: 4px; background: var(--border); border-radius: 100px; margin: -12px auto 18px; }
+.modal-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; }
+.modal-desc { color: var(--text2); font-size: .875rem; margin-bottom: 20px; line-height: 1.6; }
+.modal-acts { display: flex; flex-direction: column; gap: 10px; }
+
+/* ===== START FAST MODAL ===== */
+/* ===== TOAST ===== */
+.toast-wrap {
+  position: fixed; top: 76px; left: 50%; transform: translateX(-50%);
+  z-index: 400; pointer-events: none;
+  display: flex; flex-direction: column; gap: 8px; align-items: center;
+}
+.toast {
+  background: var(--surf3); border: 1px solid var(--border2);
+  color: var(--text); padding: 10px 20px;
+  border-radius: 100px; font-size: .85rem;
+  white-space: nowrap; box-shadow: var(--shadow);
+  animation: t-in .25s forwards, t-out .25s 2.5s forwards;
+}
+@keyframes t-in { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+@keyframes t-out { from{opacity:1} to{opacity:0} }
+
+/* ===== UTILS ===== */
+.fade { animation: fade .35s ease forwards; }
+@keyframes fade { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+.mt8{margin-top:8px} .mt14{margin-top:14px} .mt20{margin-top:20px}
+.mb10{margin-bottom:10px} .mb14{margin-bottom:14px} .mb20{margin-bottom:20px}
+.empty { text-align:center; color:var(--text3); font-size:.85rem; padding:20px; }
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:100px}
+</style>
+</head>
+<body>
+
+<!-- ================================================================
+     SETUP SCREEN
+================================================================ -->
+<div id="setup-screen" class="screen active">
+  <div class="setup-glow">⚡</div>
+  <h1 class="setup-title">FastTrack</h1>
+  <p class="setup-sub">Your personal fasting companion.<br>Track the science unfolding inside you.</p>
+
+  <div class="setup-card">
+    <div class="profile-row"><span>👤 Name</span><span>Silvio</span></div>
+    <div class="profile-row"><span>🎂 Age</span><span>46</span></div>
+    <div class="profile-row"><span>⚧ Gender</span><span>Male</span></div>
+  </div>
+
+  <div class="setup-card">
+    <div class="inp-group">
+      <label class="inp-label" for="su-height">Your Height (cm)</label>
+      <input type="number" id="su-height" placeholder="e.g. 180" min="100" max="250" step="1">
+    </div>
+    <button class="btn btn-primary" onclick="completeSetup()">🚀 &nbsp;Let's Begin</button>
+  </div>
+</div>
+
+<!-- ================================================================
+     MAIN APP
+================================================================ -->
+<div id="main-app" class="screen">
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-icon">⚡</span>
+      <span class="brand-name">FastTrack</span>
+    </div>
+    <div class="header-right">
+      <button class="hbtn" onclick="showProfileToast()">Silvio</button>
+    </div>
+  </header>
+
+  <!-- Tab: HOME -->
+  <div id="tab-home" class="tab active">
+    <div class="dash" id="home-dash"><!-- JS renders --></div>
+  </div>
+
+  <!-- Tab: CHECK-IN -->
+  <div id="tab-checkin" class="tab">
+    <div class="screen-hd">
+      <h2 class="screen-title">Morning Check-in</h2>
+      <p class="screen-sub">Log your daily measurements</p>
+    </div>
+    <div class="form-pad">
+      <div class="inp-group">
+        <label class="inp-label" for="ci-dt">Date &amp; Time</label>
+        <input type="datetime-local" id="ci-dt">
+      </div>
+      <div class="inp-group">
+        <label class="inp-label" for="ci-wt">Weight (kg)</label>
+        <input type="number" id="ci-wt" placeholder="e.g. 83.5" step="0.1" min="30" max="350">
+      </div>
+      <div class="inp-group">
+        <label class="inp-label" for="ci-bf">Body Fat %</label>
+        <input type="number" id="ci-bf" placeholder="e.g. 20.5" step="0.1" min="2" max="70">
+      </div>
+      <button class="btn btn-primary" onclick="saveCheckin()">💾 &nbsp;Save Check-in</button>
+      <div id="ci-history" class="history-list"></div>
+    </div>
+  </div>
+
+  <!-- Tab: REPORT -->
+  <div id="tab-report" class="tab">
+    <div id="report-content" style="padding:18px;display:flex;flex-direction:column;gap:14px;"><!-- JS renders --></div>
+  </div>
+
+  <!-- Tab: DATA -->
+  <div id="tab-data" class="tab">
+    <div style="padding:18px;display:flex;flex-direction:column;gap:14px;">
+      <div class="card">
+        <div class="card-label">Profile</div>
+        <div id="profile-rows"><!-- JS renders --></div>
+      </div>
+      <div class="card">
+        <div class="card-label">Data Management</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <button class="btn btn-ghost btn-sm" onclick="exportCSV()">📤 &nbsp;Export to CSV</button>
+          <button class="btn btn-ghost btn-sm" onclick="openModal('reset-modal')">🔄 &nbsp;Reset All Data</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">All Check-ins</div>
+        <div id="all-checkins"><!-- JS renders --></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-tab="home" onclick="showTab('home')">
+      <span class="ni">🏠</span><span>Home</span>
+    </button>
+    <button class="nav-btn" data-tab="checkin" onclick="showTab('checkin')">
+      <span class="ni">📊</span><span>Check-in</span>
+    </button>
+    <button class="nav-btn" data-tab="report" onclick="showTab('report')">
+      <span class="ni">📈</span><span>Report</span>
+    </button>
+    <button class="nav-btn" data-tab="data" onclick="showTab('data')">
+      <span class="ni">⚙️</span><span>Data</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ================================================================
+     MODALS
+================================================================ -->
+
+<!-- Start Fast (with initial weight entry) -->
+<div class="overlay" id="start-modal">
+  <div class="modal">
+    <div class="modal-pip"></div>
+    <h3 class="modal-title">🚀 Start Your Fast</h3>
+    <p class="modal-desc">Log your starting measurements so we can track your body composition changes precisely.</p>
+    <div class="inp-group">
+      <label class="inp-label">Starting Weight (kg)</label>
+      <input type="number" id="start-wt" placeholder="e.g. 85.0" step="0.1" min="30" max="350">
+    </div>
+    <div class="inp-group">
+      <label class="inp-label">Starting Body Fat %</label>
+      <input type="number" id="start-bf" placeholder="e.g. 22.5" step="0.1" min="2" max="70">
+    </div>
+    <div class="modal-acts mt8">
+      <button class="btn btn-primary" onclick="confirmStartFast()">⚡ &nbsp;Start Fast Now</button>
+      <button class="btn btn-ghost" onclick="closeModal('start-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- End Fast -->
+<div class="overlay" id="end-modal">
+  <div class="modal">
+    <div class="modal-pip"></div>
+    <h3 class="modal-title">🏁 End Your Fast?</h3>
+    <p class="modal-desc">You've done something incredible. Log your final measurements for a complete analysis.</p>
+    <div class="inp-group">
+      <label class="inp-label">Final Weight (kg)</label>
+      <input type="number" id="end-wt" placeholder="e.g. 82.0" step="0.1" min="30" max="350">
+    </div>
+    <div class="inp-group">
+      <label class="inp-label">Final Body Fat %</label>
+      <input type="number" id="end-bf" placeholder="e.g. 20.0" step="0.1" min="2" max="70">
+    </div>
+    <div class="modal-acts mt8">
+      <button class="btn btn-danger" onclick="confirmEndFast()">🏁 &nbsp;End Fast &amp; See Report</button>
+      <button class="btn btn-ghost" onclick="closeModal('end-modal')">💪 &nbsp;Keep Going!</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reset -->
+<div class="overlay" id="reset-modal">
+  <div class="modal">
+    <div class="modal-pip"></div>
+    <h3 class="modal-title">Reset All Data?</h3>
+    <p class="modal-desc">This permanently deletes all your fasting data, check-ins, and reports. Cannot be undone.</p>
+    <div class="modal-acts">
+      <button class="btn btn-danger" onclick="confirmReset()">🗑️ &nbsp;Yes, Reset Everything</button>
+      <button class="btn btn-ghost" onclick="closeModal('reset-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- ================================================================
+     JAVASCRIPT
+================================================================ -->
+<script>
+'use strict';
+
+// ── CONSTANTS ──────────────────────────────────────────────────────
+const PROFILE = { name: 'Silvio', age: 46, gender: 'Male' };
+
+const PHASES = [
+  {
+    id:0, h0:0, h1:12, color:'#55556a',
+    icon:'🔋', range:'0 – 12h', name:'Fuel Transition',
+    desc:'Body running on glucose and glycogen. Fat metabolism is warming up as insulin falls.',
+    mot:{
+      title:'The Countdown Has Begun',
+      body:'Your glycogen stores — roughly 400 calories of sugar packed into your liver and muscles — are being drawn down right now. Every passing hour edges you closer to the metabolic threshold that changes everything. This is where most people stop. You\'re already different.',
+      sci:'📚 Hepatic glycogen: ~80–100g being depleted. Glucagon rising, insulin falling. Lipolysis warming up. Growth hormone beginning to elevate (muscle-protective).'
+    }
+  },
+  {
+    id:1, h0:12, h1:24, color:'#ffd740',
+    icon:'🔥', range:'12 – 24h', name:'Ketosis Ignition',
+    desc:'Glycogen depleted. Liver converts fatty acids to ketones. Early ketosis begins.',
+    mot:{
+      title:'🔥 The Metabolic Switch Has Flipped',
+      body:'Something extraordinary just happened inside you, Silvio. Your liver has pivoted from burning glucose to manufacturing ketone bodies from fat. Beta-hydroxybutyrate is entering your bloodstream. Your brain — which couldn\'t run on fat directly — now has a premium alternative fuel. You\'ve crossed the threshold.',
+      sci:'📚 Blood ketones rising toward 0.3–0.5 mmol/L. Growth hormone surging (up to 5× baseline) to protect lean mass. AMPK activated. mTOR suppression beginning — the cellular cleanup signal is live.'
+    }
+  },
+  {
+    id:2, h0:24, h1:48, color:'#ff7043',
+    icon:'⚡', range:'24 – 48h', name:'Deep Ketosis',
+    desc:'Peak fat oxidation. Ketone levels measurably high. Mental clarity typically sharpens.',
+    mot:{
+      title:'⚡ Fat-Burning Furnace — ACTIVE',
+      body:'You are now running almost entirely on fat, Silvio. Ketone levels in your blood are significant and measurable. Many people experience a striking clarity of mind around this point — that\'s your brain thriving on BHB, a cleaner fuel than glucose. Your adipose tissue is being systematically mobilized. This is what you trained for.',
+      sci:'📚 Blood ketones: 0.5–3.0 mmol/L typical. Adiponectin rising (anti-inflammatory adipokine). Norepinephrine-driven thermogenesis elevated. mTOR deeply suppressed — autophagy is meaningfully active. Free fatty acid oxidation at maximum.'
+    }
+  },
+  {
+    id:3, h0:48, h1:72, color:'#00d4ff',
+    icon:'🔬', range:'48 – 72h', name:'Peak Autophagy',
+    desc:'Cellular self-cleaning at maximum. Damaged proteins and organelles recycled and rebuilt.',
+    mot:{
+      title:'🔬 Your Cells Are Self-Repairing',
+      body:'This is elite territory. Autophagy — the process Yoshinori Ohsumi won the 2016 Nobel Prize in Medicine for discovering — is now at full operation in every cell of your body. Damaged proteins, misfolded molecules, worn-out mitochondria: all being systematically disassembled and recycled into fresh cellular components. You are literally becoming newer.',
+      sci:'📚 Autophagy flux at peak. Beclin-1, ULK1, and LC3-II highly active. Associated with: reduced senescent cell burden, improved insulin receptor sensitivity, neuronal regeneration markers, and measurable reduction in inflammatory cytokines.'
+    }
+  },
+  {
+    id:4, h0:72, h1:120, color:'#8b5cf6',
+    icon:'🧬', range:'72 – 120h', name:'Immune Regeneration',
+    desc:'Old immune cells cleared. Hematopoietic stem cells activated to build a younger immune system.',
+    mot:{
+      title:'🧬 Your Immune System Is Rebooting',
+      body:'You\'ve reached territory most people never access. Your body is now actively clearing damaged, aged immune cells and triggering hematopoietic stem cells to produce fresh replacements. Valter Longo\'s research at USC demonstrated that 72h+ fasting essentially regenerates the immune system. You\'re not just losing weight — you\'re reversing cellular age.',
+      sci:'📚 IGF-1 significantly reduced → hematopoietic stem cell proliferation. FOXO3 transcription factor activated (longevity gene). Research shows significant regeneration of lymphocytes and myeloid cells. Gut microbiome diversity improving. Gut epithelium barrier being strengthened.'
+    }
+  },
+  {
+    id:5, h0:120, h1:Infinity, color:'#00e676',
+    icon:'🌟', range:'120h+', name:'Deep Metabolic Reset',
+    desc:'Profound regeneration continues. Sirtuins active. BDNF elevated. Metabolic age declining.',
+    mot:{
+      title:'🌟 You Are in Legendary Territory',
+      body:'Silvio, you are in the top fraction of a percent of people who\'ve ever pushed this far. BDNF — brain-derived neurotrophic factor — is significantly elevated, meaning your brain is literally building new neural connections. Sirtuins, the proteins most associated with longevity, are running at full capacity. You are operating in a biological state that humans rarely access in the modern world.',
+      sci:'📚 BDNF elevation: promotes neurogenesis and synaptic plasticity. SIRT1/SIRT3 highly active → mitochondrial biogenesis, telomere protection. Stem cell mobilization continuing across multiple tissue types. Some studies link this duration to measurable epigenetic age reduction (methylation clock).'
+    }
+  }
+];
+
+// ── STORAGE KEYS ──────────────────────────────────────────────────
+const K = {
+  PROF:    'ft_profile',
+  STATE:   'ft_state',
+  CHKINS:  'ft_checkins',
+  DONE:    'ft_done'
+};
+
+// ── STATE ─────────────────────────────────────────────────────────
+let timerID = null;
+let activeTab = 'home';
+
+// ── STORAGE HELPERS ───────────────────────────────────────────────
+const ls = {
+  get: (k, def=null) => { try { return JSON.parse(localStorage.getItem(k)) ?? def; } catch { return def; } },
+  set: (k,v) => localStorage.setItem(k, JSON.stringify(v)),
+  del: (k)   => localStorage.removeItem(k)
+};
+
+function profile()   { const s=ls.get(K.PROF); return s ? {...PROFILE,...s} : null; }
+function fastState() { return ls.get(K.STATE); }
+function checkins()  { return ls.get(K.CHKINS, []); }
+function doneFast()  { return ls.get(K.DONE); }
+
+// ── INIT ──────────────────────────────────────────────────────────
+function init() {
+  const p = profile();
+  if (!p || !p.height) {
+    showScreen('setup-screen');
+  } else {
+    showScreen('main-app');
+    renderAll();
+  }
+  registerSW();
+}
+
+function registerSW() {
+  if (!('serviceWorker' in navigator)) return;
+  const code = `
+    const C='ft-v1';
+    self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(c=>c.addAll(['/']))));
+    self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));
+  `;
+  try {
+    const blob = new Blob([code],{type:'application/javascript'});
+    navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
+  } catch(e){}
+}
+
+// ── SETUP ─────────────────────────────────────────────────────────
+function completeSetup() {
+  const h = parseFloat(document.getElementById('su-height').value);
+  if (!h || h < 100 || h > 250) { toast('⚠️ Enter a valid height (100–250 cm)'); return; }
+  ls.set(K.PROF, { height: h });
+  showScreen('main-app');
+  renderAll();
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => {
+    s.classList.remove('active');
+    s.style.display = s.id === id ? '' : 'none';
+  });
+  const el = document.getElementById(id);
+  if (el) { el.style.display = ''; el.classList.add('active'); }
+}
+
+function showTab(name) {
+  activeTab = name;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  const el = document.getElementById('tab-' + name);
+  if (el) el.classList.add('active');
+  if (name === 'home')    renderHome();
+  if (name === 'checkin') { initCheckinForm(); renderCIHistory(); }
+  if (name === 'report')  renderReport();
+  if (name === 'data')    renderData();
+  window.scrollTo(0,0);
+}
+
+// ── FAST CONTROL ──────────────────────────────────────────────────
+function openStartFast() {
+  // Pre-fill from latest check-in if available
+  const cks = checkins();
+  if (cks.length > 0) {
+    const last = cks[cks.length-1];
+    document.getElementById('start-wt').value = last.weight;
+    document.getElementById('start-bf').value = last.bodyFat;
+  }
+  openModal('start-modal');
+}
+
+function confirmStartFast() {
+  const wt = parseFloat(document.getElementById('start-wt').value);
+  const bf = parseFloat(document.getElementById('start-bf').value);
+  if (isNaN(wt) || isNaN(bf)) { toast('⚠️ Enter weight and body fat % to begin'); return; }
+
+  const now = new Date();
+  const state = {
+    startTime:   now.toISOString(),
+    startWeight: wt,
+    startBodyFat: bf
+  };
+  ls.set(K.STATE, state);
+
+  // Save as first check-in too
+  const cks = checkins();
+  const pad = n => String(n).padStart(2,'0');
+  const dtLocal = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  cks.unshift({ datetime: dtLocal, weight: wt, bodyFat: bf, id: Date.now() });
+  cks.sort((a,b) => new Date(a.datetime)-new Date(b.datetime));
+  ls.set(K.CHKINS, cks);
+
+  closeModal('start-modal');
+  renderAll();
+  toast('🚀 Fast started! Your journey begins now.');
+}
+
+function confirmEndFast() {
+  const wt = parseFloat(document.getElementById('end-wt').value);
+  const bf = parseFloat(document.getElementById('end-bf').value);
+  if (isNaN(wt) || isNaN(bf)) { toast('⚠️ Enter your final weight and body fat %'); return; }
+
+  const state = fastState();
+  const endTime = new Date();
+  const durationMs = endTime - new Date(state.startTime);
+
+  ls.set(K.DONE, {
+    startTime:    state.startTime,
+    endTime:      endTime.toISOString(),
+    durationMs,
+    startWeight:  state.startWeight,
+    startBodyFat: state.startBodyFat,
+    finalWeight:  wt,
+    finalFat:     bf,
+    checkins:     checkins()
+  });
+
+  ls.del(K.STATE);
+  if (timerID) { clearInterval(timerID); timerID = null; }
+  closeModal('end-modal');
+  renderAll();
+  showTab('report');
+  toast('🏆 Incredible work, Silvio! See your report!');
+}
+
+// ── RENDER ALL ────────────────────────────────────────────────────
+function renderAll() {
+  renderHome();
+  renderCIHistory();
+  renderData();
+}
+
+// ── HOME ──────────────────────────────────────────────────────────
+function renderHome() {
+  const dash = document.getElementById('home-dash');
+  if (!dash) return;
+  const state = fastState();
+  if (state) {
+    dash.innerHTML = buildActiveFast(state);
+    startTimer();
+  } else {
+    if (timerID) { clearInterval(timerID); timerID = null; }
+    dash.innerHTML = buildIdleScreen();
+  }
+}
+
+function buildIdleScreen() {
+  const cks = checkins();
+  const done = doneFast();
+  const last = cks.length ? cks[cks.length-1] : null;
+  const p = profile();
+
+  let statsHtml = '';
+  if (last) {
+    const bmi = p.height ? (last.weight/Math.pow(p.height/100,2)).toFixed(1) : '—';
+    const fatKg = (last.weight * last.bodyFat / 100).toFixed(1);
+    statsHtml = `
+      <div class="card fade">
+        <div class="card-label">Last Check-in — ${fmtDate(last.datetime)}</div>
+        <div class="stats-row">
+          <div class="stat-box">
+            <div class="stat-v" style="color:var(--cyan)">${last.weight}</div>
+            <div class="stat-l">kg</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-v" style="color:var(--orange)">${last.bodyFat}%</div>
+            <div class="stat-l">Body Fat</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-v" style="color:var(--purple)">${fatKg}</div>
+            <div class="stat-l">Fat kg</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-v" style="color:var(--text2)">${bmi}</div>
+            <div class="stat-l">BMI</div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  const doneNote = done ? `<p style="text-align:center;color:var(--text3);font-size:.78rem;margin-bottom:10px;">Last fast: ${fmtDurStr(done.durationMs)}</p>` : '';
+
+  return `
+    <div class="start-hero fade">
+      <span class="sh-icon">⚡</span>
+      <h2 class="sh-title">Ready, Silvio?</h2>
+      <p class="sh-sub">Your next metabolic transformation awaits. Starting a fast takes under 10 seconds — your body will do the rest.</p>
+      ${doneNote}
+      <div class="action-col">
+        <button class="btn btn-primary" onclick="openStartFast()">🚀 &nbsp;Start Fast</button>
+        <button class="btn btn-ghost" onclick="showTab('checkin')">📊 &nbsp;Log a Check-in</button>
+      </div>
+    </div>
+    ${statsHtml}
+  `;
+}
+
+function buildActiveFast(state) {
+  return `
+    <div class="timer-card fade" id="tc">
+      <div class="timer-lbl">TIME FASTING</div>
+      <div class="timer-row">
+        <div class="t-unit"><span class="t-val" id="td">00</span><span class="t-lbl">DAYS</span></div>
+        <span class="t-sep">:</span>
+        <div class="t-unit"><span class="t-val" id="th">00</span><span class="t-lbl">HRS</span></div>
+        <span class="t-sep">:</span>
+        <div class="t-unit"><span class="t-val" id="tm">00</span><span class="t-lbl">MIN</span></div>
+      </div>
+      <div class="phase-chip" id="phase-chip" style="color:var(--p0)">🔋 Loading…</div>
+      <div class="started-txt">Started: ${fmtDate(state.startTime, true)}</div>
+      <div class="phase-bar"><div class="phase-bar-fill" id="phase-fill" style="width:0%;background:var(--p0)"></div></div>
+    </div>
+
+    <div class="motiv-card fade" id="motiv-card">
+      <div class="motiv-top">WHAT'S HAPPENING NOW</div>
+      <div class="motiv-title" id="motiv-title">Loading…</div>
+      <div class="motiv-body" id="motiv-body"></div>
+      <div class="motiv-sci" id="motiv-sci"></div>
+    </div>
+
+    <div class="card fade">
+      <div class="card-label">Your Journey Timeline</div>
+      <div class="timeline-wrap" id="timeline"><!-- ticked --></div>
+    </div>
+
+    <div class="action-col fade">
+      <button class="btn btn-ghost" onclick="showTab('checkin')">📊 &nbsp;Morning Check-in</button>
+      <button class="btn btn-danger" onclick="openModal('end-modal')">🏁 &nbsp;End Fast</button>
+    </div>
+  `;
+}
+
+// ── TIMER ─────────────────────────────────────────────────────────
+function startTimer() {
+  if (timerID) clearInterval(timerID);
+  tick();
+  timerID = setInterval(tick, 10000);
+}
+
+function tick() {
+  const state = fastState();
+  if (!state) return;
+  const ms = Date.now() - new Date(state.startTime).getTime();
+  const totalSec = Math.floor(ms/1000);
+  const d = Math.floor(totalSec/86400);
+  const h = Math.floor((totalSec%86400)/3600);
+  const m = Math.floor((totalSec%3600)/60);
+  const pad = n => String(n).padStart(2,'0');
+
+  const td = document.getElementById('td');
+  const th = document.getElementById('th');
+  const tm = document.getElementById('tm');
+  if (!td) return;
+  td.textContent = pad(d);
+  th.textContent = pad(h);
+  tm.textContent = pad(m);
+
+  const hrs = ms/3600000;
+  const phase = getPhase(hrs);
+  const prog  = phaseProgress(hrs, phase);
+
+  const chip = document.getElementById('phase-chip');
+  if (chip) { chip.style.color = phase.color; chip.textContent = phase.icon+' '+phase.name; }
+
+  const fill = document.getElementById('phase-fill');
+  if (fill) { fill.style.width = (prog*100)+'%'; fill.style.background = phase.color; }
+
+  const mt = document.getElementById('motiv-title');
+  const mb = document.getElementById('motiv-body');
+  const ms2= document.getElementById('motiv-sci');
+  if (mt) mt.textContent = phase.mot.title;
+  if (mb) mb.textContent = phase.mot.body;
+  if (ms2) ms2.textContent = phase.mot.sci;
+
+  const tl = document.getElementById('timeline');
+  if (tl) tl.innerHTML = buildTimeline(hrs);
+}
+
+function buildTimeline(hrs) {
+  return PHASES.map(p => {
+    const reached  = hrs >= p.h0;
+    const isCur    = hrs >= p.h0 && (p.h1===Infinity || hrs < p.h1);
+    let cls = 'tl-item';
+    if (reached && !isCur) cls += ' reached';
+    if (isCur) cls += ' current';
+    return `<div class="${cls}" style="color:${p.color}">
+      <div class="tl-dot"></div>
+      <div class="tl-range">${p.range}</div>
+      <div class="tl-name">${p.icon} ${p.name}</div>
+      <div class="tl-desc">${p.desc}</div>
+    </div>`;
+  }).join('');
+}
+
+function getPhase(hrs) {
+  let cur = PHASES[0];
+  for (const p of PHASES) if (hrs >= p.h0) cur = p;
+  return cur;
+}
+
+function phaseProgress(hrs, phase) {
+  if (phase.h1===Infinity) return 1;
+  return Math.min(1, Math.max(0, (hrs-phase.h0)/(phase.h1-phase.h0)));
+}
+
+// ── CHECK-IN ──────────────────────────────────────────────────────
+function initCheckinForm() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  document.getElementById('ci-dt').value =
+    `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+}
+
+function saveCheckin() {
+  const dt = document.getElementById('ci-dt').value;
+  const wt = parseFloat(document.getElementById('ci-wt').value);
+  const bf = parseFloat(document.getElementById('ci-bf').value);
+  if (!dt || isNaN(wt) || isNaN(bf)) { toast('⚠️ Fill in all fields'); return; }
+
+  const cks = checkins();
+  cks.push({ datetime: dt, weight: wt, bodyFat: bf, id: Date.now() });
+  cks.sort((a,b) => new Date(a.datetime)-new Date(b.datetime));
+  ls.set(K.CHKINS, cks);
+
+  renderCIHistory();
+  renderData();
+  toast('✅ Check-in saved!');
+  document.getElementById('ci-wt').value = '';
+  document.getElementById('ci-bf').value = '';
+}
+
+function renderCIHistory() {
+  const el = document.getElementById('ci-history');
+  if (!el) return;
+  const cks = checkins();
+  if (!cks.length) { el.innerHTML = '<div class="empty">No check-ins yet</div>'; return; }
+  const rows = [...cks].reverse().slice(0,8).map(c => `
+    <div class="hist-item">
+      <span class="hd">${fmtDate(c.datetime, true)}</span>
+      <span class="hw">${c.weight} kg</span>
+      <span class="hf">${c.bodyFat}%</span>
+    </div>`).join('');
+  el.innerHTML = `<div class="sect-lbl">Recent Entries</div>${rows}`;
+}
+
+// ── REPORT ────────────────────────────────────────────────────────
+function renderReport() {
+  const el = document.getElementById('report-content');
+  if (!el) return;
+  const done  = doneFast();
+  const state = fastState();
+
+  if (!done && !state) {
+    el.innerHTML = `<div class="start-hero fade">
+      <span class="sh-icon">📈</span>
+      <h2 class="sh-title">No Report Yet</h2>
+      <p class="sh-sub">Complete your first fast to unlock your full body composition report and transformation analysis.</p>
+    </div>`;
+    return;
+  }
+
+  if (state && !done) {
+    const ms = Date.now() - new Date(state.startTime).getTime();
+    const cks = checkins();
+    const lat = cks.length ? cks[cks.length-1] : null;
+    const lost = lat ? (state.startWeight - lat.weight).toFixed(1) : '—';
+    el.innerHTML = `
+      <div class="report-hero fade">
+        <span class="rh-icon">⚡</span>
+        <div class="rh-title">Fast In Progress</div>
+        <div class="rh-dur">${fmtDurStr(ms)}</div>
+        <div class="rh-sub">End your fast to unlock the full report.</div>
+      </div>
+      ${lat ? `<div class="card fade">
+        <div class="card-label">Current Progress</div>
+        <div class="compare-row"><span class="c-lbl">⚖️ Weight</span>
+          <div class="c-vals">
+            <span class="c-from">${state.startWeight} kg</span>
+            <span class="c-arr">→</span>
+            <span class="c-to">${lat.weight} kg</span>
+            ${parseFloat(lost)>0?`<span class="c-diff">(−${lost} kg)</span>`:''}
+          </div></div>
+        <div class="compare-row"><span class="c-lbl">📊 Body Fat</span>
+          <div class="c-vals">
+            <span class="c-from">${state.startBodyFat}%</span>
+            <span class="c-arr">→</span>
+            <span class="c-to">${lat.bodyFat}%</span>
+          </div></div>
+      </div>` : ''}
+      ${cks.length>1?buildChart(cks):''}
+    `;
+    return;
+  }
+
+  if (done) el.innerHTML = buildFullReport(done);
+}
+
+function buildFullReport(d) {
+  const {days,hours} = fmtDur(d.durationMs);
+  const lost   = d.startWeight - d.finalWeight;
+  const sFatKg = d.startWeight * d.startBodyFat/100;
+  const fFatKg = d.finalWeight  * d.finalFat/100;
+  const fatLost  = Math.max(0, sFatKg - fFatKg);
+  const leanLost = lost - fatLost;
+  const fatPct   = lost>0 ? Math.round(fatLost/lost*100) : 0;
+
+  return `
+    <div class="report-hero fade">
+      <span class="rh-icon">🏆</span>
+      <div class="rh-title">Fast Complete!</div>
+      <div class="rh-dur">${days>0?days+'d ':''} ${hours}h fasted</div>
+      <div class="rh-sub">You did something extraordinary, Silvio.</div>
+    </div>
+
+    <div class="card fade">
+      <div class="card-label">Weight &amp; Body Composition</div>
+      <div class="compare-row">
+        <span class="c-lbl">⚖️ Weight</span>
+        <div class="c-vals">
+          <span class="c-from">${d.startWeight} kg</span>
+          <span class="c-arr">→</span>
+          <span class="c-to">${d.finalWeight} kg</span>
+          <span class="c-diff">−${Math.abs(lost).toFixed(1)} kg</span>
+        </div>
+      </div>
+      <div class="compare-row">
+        <span class="c-lbl">📊 Body Fat</span>
+        <div class="c-vals">
+          <span class="c-from">${d.startBodyFat}%</span>
+          <span class="c-arr">→</span>
+          <span class="c-to">${d.finalFat}%</span>
+          <span class="c-diff">−${Math.abs(d.startBodyFat-d.finalFat).toFixed(1)}%</span>
+        </div>
+      </div>
+      <div class="compare-row">
+        <span class="c-lbl">💪 Fat Mass (start)</span>
+        <div class="c-vals"><span class="c-to">${sFatKg.toFixed(2)} kg</span></div>
+      </div>
+      <div class="compare-row">
+        <span class="c-lbl">💪 Fat Mass (end)</span>
+        <div class="c-vals"><span class="c-to">${fFatKg.toFixed(2)} kg</span></div>
+      </div>
+    </div>
+
+    <div class="card fade">
+      <div class="card-label">Weight Loss Breakdown</div>
+      <p style="font-size:.82rem;color:var(--text2);margin-bottom:14px;line-height:1.55;">
+        Of your <strong style="color:var(--text)">${Math.abs(lost).toFixed(2)} kg</strong> total loss:
+      </p>
+      <div class="bk-item">
+        <div class="bk-dot" style="background:var(--red)"></div>
+        <span class="bk-lbl">🔥 Actual Fat Mass Lost</span>
+        <span class="bk-val" style="color:var(--green)">${fatLost.toFixed(2)} kg <span class="bk-pct">(${fatPct}%)</span></span>
+      </div>
+      <div class="bk-item">
+        <div class="bk-dot" style="background:var(--cyan)"></div>
+        <span class="bk-lbl">💧 Lean Mass / Water / Glycogen</span>
+        <span class="bk-val" style="color:var(--text2)">${Math.max(0,leanLost).toFixed(2)} kg <span class="bk-pct">(${100-fatPct}%)</span></span>
+      </div>
+      <p style="font-size:.7rem;color:var(--text3);margin-top:12px;line-height:1.45;">
+        * Calculated from body fat % measurements. Lean mass includes muscle, water, glycogen, bone, and organs.
+        Most water/glycogen loss rehydrates within 24–48h of refeeding.
+      </p>
+    </div>
+
+    ${d.checkins && d.checkins.length>1 ? buildChart(d.checkins) : ''}
+
+    <div class="card fade" style="margin-bottom:10px;">
+      <div class="card-label">Refeeding Protocol</div>
+      <p style="font-size:.85rem;color:var(--text2);line-height:1.65;">
+        Break your fast gently. Start with bone broth, diluted juice, or a small amount of easily digestible food.
+        Avoid large meals for the first few hours — refeeding syndrome is rare but real.
+        Replenish electrolytes (sodium, potassium, magnesium). Expect weight to temporarily increase
+        as glycogen refills and water follows (3–4g water per gram of glycogen).
+      </p>
+    </div>
+  `;
+}
+
+function buildChart(cks) {
+  if (!cks || cks.length < 2) return '';
+  const weights = cks.map(c=>c.weight);
+  const minW = Math.min(...weights), maxW = Math.max(...weights);
+  const range = maxW - minW || 1;
+  const W=320, H=150, PX=28, PY=14;
+  const cW=W-PX*2, cH=H-PY*2;
+
+  const pts = cks.map((c,i)=>({
+    x: PX + (i/(cks.length-1))*cW,
+    y: PY + (1-(c.weight-minW)/range)*cH,
+    w: c.weight, d: fmtDate(c.datetime, true)
+  }));
+
+  const linePath = pts.map((p,i)=>`${i?'L':'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+  const fillPath = linePath + ` L${pts[pts.length-1].x.toFixed(1)} ${H-PY} L${PX} ${H-PY} Z`;
+
+  const grid = [0,.25,.5,.75,1].map(t=>{
+    const y = (PY+(1-t)*cH).toFixed(1);
+    const v = (minW+t*range).toFixed(1);
+    return `<line x1="${PX}" y1="${y}" x2="${W-PX}" y2="${y}" stroke="#2a2a40" stroke-width="1"/>
+            <text x="${PX-4}" y="${(parseFloat(y)+4).toFixed(0)}" fill="#55556a" font-size="9" text-anchor="end">${v}</text>`;
+  }).join('');
+
+  const labels = cks.map((c,i)=>{
+    if (cks.length > 8 && i%Math.ceil(cks.length/4)!==0 && i!==cks.length-1) return '';
+    const x = (PX+(i/(cks.length-1))*cW).toFixed(1);
+    const d = new Date(c.datetime);
+    const lbl = `${d.getMonth()+1}/${d.getDate()}`;
+    return `<text x="${x}" y="${H-1}" fill="#55556a" font-size="8" text-anchor="middle">${lbl}</text>`;
+  }).join('');
+
+  const dots = pts.map(p=>`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="#00d4ff" stroke="#08080f" stroke-width="2"><title>${p.w} kg</title></circle>`).join('');
+
+  return `<div class="card fade">
+    <div class="card-label">Weight Over Time</div>
+    <div class="chart-wrap">
+      <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+        ${grid}
+        <path d="${fillPath}" fill="rgba(0,212,255,.08)" stroke="none"/>
+        <path d="${linePath}" fill="none" stroke="#00d4ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        ${dots}
+        ${labels}
+      </svg>
+    </div>
+  </div>`;
+}
+
+// ── DATA SCREEN ───────────────────────────────────────────────────
+function renderData() {
+  const p = profile();
+  const el = document.getElementById('profile-rows');
+  if (el && p) {
+    const cks = checkins();
+    const last = cks.length ? cks[cks.length-1] : null;
+    const bmi = last && p.height ? (last.weight/Math.pow(p.height/100,2)).toFixed(1) : '—';
+    el.innerHTML = [
+      ['Name',   p.name],
+      ['Age',    p.age],
+      ['Gender', p.gender],
+      ['Height', p.height+' cm'],
+      ['Current BMI', bmi],
+      ['Check-ins logged', cks.length],
+      ['Fast active', fastState() ? 'Yes (' + fmtDurStr(Date.now()-new Date(fastState().startTime).getTime()) + ')' : 'No'],
+    ].map(([l,v])=>`<div class="info-row"><span class="il">${l}</span><span class="iv">${v}</span></div>`).join('');
+  }
+
+  const allEl = document.getElementById('all-checkins');
+  if (allEl) {
+    const cks = checkins();
+    if (!cks.length) { allEl.innerHTML='<div class="empty">No check-ins yet</div>'; return; }
+    allEl.innerHTML = [...cks].reverse().map(c=>`
+      <div class="hist-item">
+        <span class="hd">${fmtDate(c.datetime,true)}</span>
+        <span class="hw">${c.weight} kg</span>
+        <span class="hf">${c.bodyFat}%</span>
+      </div>`).join('');
+  }
+}
+
+// ── EXPORT CSV ────────────────────────────────────────────────────
+function exportCSV() {
+  const cks   = checkins();
+  const state = fastState();
+  const done  = doneFast();
+  let csv = 'Date/Time,Weight (kg),Body Fat (%),Fat Mass (kg),Lean Mass (kg)\n';
+  cks.forEach(c => {
+    const fm = (c.weight*c.bodyFat/100).toFixed(2);
+    const lm = (c.weight-parseFloat(fm)).toFixed(2);
+    csv += `"${c.datetime}",${c.weight},${c.bodyFat},${fm},${lm}\n`;
+  });
+  if (done) {
+    csv += '\n[COMPLETED FAST]\n';
+    csv += `Start Time,${done.startTime}\n`;
+    csv += `End Time,${done.endTime}\n`;
+    csv += `Duration,${fmtDurStr(done.durationMs)}\n`;
+    csv += `Start Weight (kg),${done.startWeight}\n`;
+    csv += `Final Weight (kg),${done.finalWeight}\n`;
+    csv += `Weight Lost (kg),${(done.startWeight-done.finalWeight).toFixed(2)}\n`;
+    csv += `Start Body Fat (%),${done.startBodyFat}\n`;
+    csv += `Final Body Fat (%),${done.finalFat}\n`;
+  }
+  if (state) {
+    csv += '\n[ACTIVE FAST]\n';
+    csv += `Start Time,${state.startTime}\n`;
+    csv += `Duration So Far,${fmtDurStr(Date.now()-new Date(state.startTime).getTime())}\n`;
+  }
+  const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = `fasttrack_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+  toast('📤 CSV exported!');
+}
+
+// ── RESET ─────────────────────────────────────────────────────────
+function confirmReset() {
+  [K.PROF, K.STATE, K.CHKINS, K.DONE].forEach(k=>ls.del(k));
+  if (timerID) { clearInterval(timerID); timerID=null; }
+  closeModal('reset-modal');
+  location.reload();
+}
+
+// ── MODALS ────────────────────────────────────────────────────────
+function openModal(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add('open');
+  el.addEventListener('pointerdown', function handler(e) {
+    if (e.target===el) { closeModal(id); el.removeEventListener('pointerdown',handler); }
+  });
+}
+function closeModal(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('open');
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────
+function toast(msg) {
+  const wrap = document.getElementById('toast-wrap');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(()=>el.remove(), 3100);
+}
+
+// ── PROFILE TOAST ─────────────────────────────────────────────────
+function showProfileToast() {
+  const p = profile();
+  if (p) toast(`${p.name} · ${p.age}y · ${p.height}cm`);
+}
+
+// ── DATE / DURATION HELPERS ───────────────────────────────────────
+function fmtDate(str, withTime=false) {
+  try {
+    const d = new Date(str);
+    const opts = { month:'short', day:'numeric' };
+    if (withTime) {
+      return d.toLocaleDateString('en-US',opts)+' '+
+             d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    }
+    return d.toLocaleDateString('en-US',{...opts,weekday:'short'});
+  } catch { return str; }
+}
+
+function fmtDur(ms) {
+  const s = Math.floor(ms/1000);
+  return { days: Math.floor(s/86400), hours: Math.floor((s%86400)/3600), minutes: Math.floor((s%3600)/60) };
+}
+
+function fmtDurStr(ms) {
+  const {days,hours,minutes} = fmtDur(ms);
+  let s = '';
+  if (days>0) s += days+'d ';
+  s += hours+'h '+minutes+'m';
+  return s;
+}
+
+// ── BOOT ─────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
