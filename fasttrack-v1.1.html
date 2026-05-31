@@ -720,7 +720,10 @@ async function fetchQuote() {
 
   for (const url of urls) {
     try {
-      const r = await fetch(url, { signal: AbortSignal.timeout(4000) });
+      const ctrl = new AbortController();
+      const tid = setTimeout(() => ctrl.abort(), 4000);
+      const r = await fetch(url, { signal: ctrl.signal });
+      clearTimeout(tid);
       if (!r.ok) continue;
       const d = await r.json();
       let q;
@@ -750,7 +753,7 @@ function init() {
 function registerSW() {
   if (!('serviceWorker' in navigator)) return;
   const c = `const C='ft-v1.1';
-    self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(c=>c.addAll(['/']))));
+    self.addEventListener('install',e=>{ e.waitUntil(Promise.resolve()); self.skipWaiting(); });
     self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;
   try {
     navigator.serviceWorker.register(URL.createObjectURL(new Blob([c],{type:'application/javascript'}))).catch(()=>{});
