@@ -97,21 +97,20 @@ Token limit prekida razgovor bez upozorenja. Sljedeća sesija ne zna ništa.
 
 ## Current State
 
-**Aktivna grana:** `v1.4-gamification`
-**Zadnji commit:** `v1.4.0 — Gamification badges`
+**Aktivna grana:** `v1.5-wellbeing-journal`
+**Zadnji commit:** `v1.5.0 — Wellbeing journal (energy, hunger, mental clarity)`
 
-### Što je implementirano (v1.4)
-- ✅ Sve iz v1.3 +
-- ✅ BADGES array: 7 achievementa (12h, 24h, 36h, 48h, 72h, 5d, 7d)
-- ✅ checkBadges(hrs) u tick() — detektuje novi badge svake 10s
-- ✅ showBadgeToast() — animirani badge unlock toast (5s, veći od normalnog)
-- ✅ buildBadgeRack() — badge rack u aktivnom fastu (earned + next s countdown)
-- ✅ buildBadgeGrid() — full badge grid u Data tabu (earned/locked state, ×count)
-- ✅ Badge count na idle screenu (X/7 badges earned lifetime)
-- ✅ Badges se čuvaju lifetime kroz više fastova (ft_badges key)
-- ✅ Reset briše i BADGES + LBADGE
+### Što je implementirano (v1.5)
+- ✅ Sve iz v1.4 +
+- ✅ Wellbeing rating sekcija na check-in formu (3 grupe × 5 emoji-buttona)
+- ✅ Energy (😴😩😐💪⚡), Hunger (🔥😫😐🙂😌), Mental Clarity (🌫️😵🤔💡🧠)
+- ✅ wbSelect() + wbState objekt — tap-to-select s color highlight per kategorija
+- ✅ saveCheckin() čuva `wb: { energy, hunger, clarity }` uz svaki check-in
+- ✅ renderCIHistory() prikazuje wellbeing chips ispod svake unosa
+- ✅ CSV export uključuje 3 wellbeing kolone
+- ✅ Wellbeing je opcionalno — može se snimiti check-in bez ratinga
 
-### Arhitektura badgea
+### Arhitektura badgea (v1.4)
 - `ft_badges` — array `{ id, earnedAt, fastStart }` — lifetime, čuva sve fastove
 - `ft_lbadge` — last checked hrs (za debounce)
 - `thisFastBadgeIds()` — Set ID-eva zarađenih u tekućem fastu
