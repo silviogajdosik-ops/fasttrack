@@ -476,6 +476,11 @@ input[type=datetime-local]::-webkit-calendar-picker-indicator { filter:invert(.5
 }
 .share-btns { display:flex; gap:8px; }
 
+.hist-actions { display:flex; gap:5px; margin-left:auto; }
+.hist-act { background:none; border:none; cursor:pointer; font-size:.9rem; padding:2px 4px; opacity:.5; transition:opacity .15s; }
+.hist-act:hover { opacity:1; }
+.ci-all-wrap { position:relative; }
+.ci-add-btn { position:absolute; top:0; right:0; font-size:.72rem; padding:3px 8px; }
 /* ===== UTILS ===== */
 .fade{animation:fadeup .35s ease forwards}
 @keyframes fadeup{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
@@ -599,7 +604,10 @@ input[type=datetime-local]::-webkit-calendar-picker-indicator { filter:invert(.5
       </div>
 
       <button class="btn btn-primary" onclick="saveCheckin()">💾 &nbsp;Save Check-in</button>
-      <div id="ci-history" class="mt16"></div>
+      <div class="ci-all-wrap mt16">
+        <button class="btn btn-ghost btn-sm ci-add-btn" onclick="openEditModal()">＋ Add Entry</button>
+        <div id="ci-history"></div>
+      </div>
     </div>
   </div>
 
@@ -735,6 +743,34 @@ input[type=datetime-local]::-webkit-calendar-picker-indicator { filter:invert(.5
     <div class="modal-acts">
       <button class="btn btn-primary" onclick="confirmEditStart()">✅ &nbsp;Update Start Time</button>
       <button class="btn btn-ghost"   onclick="closeModal('editstart-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Edit / Add Check-in Modal -->
+<div class="overlay" id="ci-edit-modal">
+  <div class="modal">
+    <div class="mpip"></div>
+    <h3 class="modal-title" id="ci-edit-title">✏️ Edit Check-in</h3>
+    <div class="fp">
+      <input type="hidden" id="ci-edit-id">
+      <div class="ig">
+        <label class="il" for="ci-edit-dt">Date &amp; Time</label>
+        <input type="datetime-local" id="ci-edit-dt">
+      </div>
+      <div class="ig">
+        <label class="il" for="ci-edit-wt">Weight (kg)</label>
+        <input type="number" id="ci-edit-wt" step="0.1" min="30" max="350">
+      </div>
+      <div class="ig">
+        <label class="il" for="ci-edit-bf">Body Fat % <span style="color:var(--text3);font-size:.75rem">(optional)</span></label>
+        <input type="number" id="ci-edit-bf" step="0.1" min="2" max="70" placeholder="e.g. 20.5">
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn btn-primary" style="flex:2" onclick="saveEditCheckin()">💾 &nbsp;Save</button>
+        <button class="btn btn-ghost" style="flex:1" onclick="closeModal('ci-edit-modal')">Cancel</button>
+      </div>
     </div>
   </div>
 </div>
@@ -960,7 +996,7 @@ function buildBadgeGrid() {
 }
 
 // ── STORAGE ────────────────────────────────────────────────────────
-const APP_VERSION = 'v1.6.2';
+const APP_VERSION = 'v1.6.3';
 const K = { PROF:'ft_profile', STATE:'ft_state', CHKINS:'ft_checkins', DONE:'ft_done', QUOTE:'ft_quote', NOTIF:'ft_notif', LPHASE:'ft_lphase', GFIT:'ft_gfit', BADGES:'ft_badges', LBADGE:'ft_lbadge' };
 const ls = {
   get:(k,d=null)=>{ try{return JSON.parse(localStorage.getItem(k))??d}catch{return d} },
@@ -1021,7 +1057,7 @@ function init() {
 
 function registerSW() {
   if (!('serviceWorker' in navigator)) return;
-  const c = `const C='ft-v1.6.2';
+  const c = `const C='ft-v1.6.3';
     self.addEventListener('install',e=>{ e.waitUntil(Promise.resolve()); self.skipWaiting(); });
     self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));
     self.addEventListener('message',e=>{
@@ -1425,26 +1461,92 @@ function saveCheckin() {
 function renderCIHistory() {
   const el=document.getElementById('ci-history'); if(!el)return;
   const cks=checkins();
-  if(!cks.length){ el.innerHTML='<div class="empty">No check-ins yet</div>'; return; }
+  if(!cks.length){ el.innerHTML='<div class="empty">No check-ins yet. Tap ＋ to add one.</div>'; return; }
   const wbIcons = { energy:['😴','😩','😐','💪','⚡'], hunger:['🔥','😫','😐','🙂','😌'], clarity:['🌫️','😵','🤔','💡','🧠'] };
   el.innerHTML=`<div class="slbl">Recent Entries</div>`+
-    [...cks].reverse().slice(0,8).map(c=>{
+    [...cks].reverse().slice(0,20).map(ck=>{
       let wbHtml='';
-      if(c.wb&&(c.wb.energy||c.wb.hunger||c.wb.clarity)){
-        const chips = [
-          c.wb.energy  ? `<span class="wb-chip">⚡${wbIcons.energy[c.wb.energy-1]} ${c.wb.energy}</span>` : '',
-          c.wb.hunger  ? `<span class="wb-chip">🍽️${wbIcons.hunger[c.wb.hunger-1]} ${c.wb.hunger}</span>` : '',
-          c.wb.clarity ? `<span class="wb-chip">🧠${wbIcons.clarity[c.wb.clarity-1]} ${c.wb.clarity}</span>` : '',
+      if(ck.wb&&(ck.wb.energy||ck.wb.hunger||ck.wb.clarity)){
+        const chips=[
+          ck.wb.energy  ?`<span class="wb-chip">⚡${wbIcons.energy[ck.wb.energy-1]} ${ck.wb.energy}</span>`:'',
+          ck.wb.hunger  ?`<span class="wb-chip">🍽️${wbIcons.hunger[ck.wb.hunger-1]} ${ck.wb.hunger}</span>`:'',
+          ck.wb.clarity ?`<span class="wb-chip">🧠${wbIcons.clarity[ck.wb.clarity-1]} ${ck.wb.clarity}</span>`:'',
         ].filter(Boolean).join('');
-        wbHtml=`<div class="wb-row">${chips}</div>`;
+        wbHtml=`<div class="wb-row" style="width:100%">${chips}</div>`;
       }
-      return `<div class="hist-item" style="flex-wrap:wrap">
-        <span class="hd">${fmtDate(c.datetime,true)}</span>
-        <span class="hw">${c.weight} kg</span>
-        <span class="hf">${c.bodyFat}%</span>
+      const bfStr = ck.bodyFat!=null ? ck.bodyFat+'%' : '—';
+      return `<div class="hist-item" style="flex-wrap:wrap;align-items:center">
+        <span class="hd">${fmtDate(ck.datetime,true)}</span>
+        <span class="hw">${ck.weight} kg</span>
+        <span class="hf">${bfStr}</span>
+        <div class="hist-actions">
+          <button class="hist-act" onclick="openEditModal('${ck.id}')" title="Edit">✏️</button>
+          <button class="hist-act" onclick="deleteCheckin('${ck.id}')" title="Delete">🗑️</button>
+        </div>
         ${wbHtml}
       </div>`;
     }).join('');
+}
+
+// ── CHECK-IN CRUD ───────────────────────────────────────────────────
+function openEditModal(id) {
+  const title = document.getElementById('ci-edit-title');
+  const idEl  = document.getElementById('ci-edit-id');
+  const dtEl  = document.getElementById('ci-edit-dt');
+  const wtEl  = document.getElementById('ci-edit-wt');
+  const bfEl  = document.getElementById('ci-edit-bf');
+
+  if (id) {
+    const ck = checkins().find(c => String(c.id) === String(id));
+    if (!ck) return;
+    title.textContent = '✏️ Edit Check-in';
+    idEl.value  = ck.id;
+    dtEl.value  = dtLocalStr(new Date(ck.datetime));
+    wtEl.value  = ck.weight;
+    bfEl.value  = ck.bodyFat != null ? ck.bodyFat : '';
+  } else {
+    title.textContent = '＋ Add Check-in';
+    idEl.value  = '';
+    dtEl.value  = dtLocalStr(new Date());
+    wtEl.value  = '';
+    bfEl.value  = '';
+  }
+  openModal('ci-edit-modal');
+}
+
+function saveEditCheckin() {
+  const id   = document.getElementById('ci-edit-id').value;
+  const dt   = document.getElementById('ci-edit-dt').value;
+  const wt   = parseFloat(document.getElementById('ci-edit-wt').value);
+  const bfRaw = document.getElementById('ci-edit-bf').value;
+  const bf   = bfRaw !== '' ? parseFloat(bfRaw) : null;
+
+  if (!dt || isNaN(wt)) { toast('⚠️ Date and weight are required'); return; }
+
+  let cks = checkins();
+  if (id) {
+    cks = cks.map(c => String(c.id)===String(id) ? {...c, datetime:dt, weight:wt, bodyFat:bf} : c);
+    toast('✅ Entry updated');
+  } else {
+    cks.push({ datetime:dt, weight:wt, bodyFat:bf, id:Date.now(), src:'manual' });
+    cks.sort((a,b) => new Date(a.datetime)-new Date(b.datetime));
+    toast('✅ Entry added');
+  }
+  ls.set(K.CHKINS, cks);
+  closeModal('ci-edit-modal');
+  renderCIHistory();
+  renderData();
+  renderHome();
+}
+
+function deleteCheckin(id) {
+  if (!confirm('Delete this check-in?')) return;
+  const cks = checkins().filter(c => String(c.id) !== String(id));
+  ls.set(K.CHKINS, cks);
+  renderCIHistory();
+  renderData();
+  renderHome();
+  toast('🗑️ Deleted');
 }
 
 // ── REPORT ─────────────────────────────────────────────────────────
@@ -1886,6 +1988,35 @@ async function nativeShare() {
   } catch(e) { if (e.name !== 'AbortError') toast('⚠️ Share not supported'); }
 }
 
+
+async function debugGFitData() {
+  const cfg = getGFitCfg();
+  if (!isGFitConnected()) { toast('⚠️ Not connected'); return; }
+  toast('🔍 Fetching raw data types...');
+  const now = Date.now();
+  const body = {
+    aggregateBy:[{dataTypeName:'com.google.weight'},{dataTypeName:'com.google.body.fat.percentage'}],
+    bucketByTime:{durationMillis:86400000},
+    startTimeMillis: now - 7*86400000,
+    endTimeMillis: now
+  };
+  try {
+    const r = await fetch('https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate', {
+      method:'POST',
+      headers:{'Authorization':'Bearer '+cfg.token,'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    const data = await r.json();
+    const ids = new Set();
+    (data.bucket||[]).forEach(b=>(b.dataset||[]).forEach(ds=>{
+      if((ds.point||[]).some(p=>p.value?.[0]?.fpVal)) ids.add(ds.dataSourceId);
+    }));
+    if(!ids.size) { toast('⚠️ No data points in last 7 days. Zepp Life sync may be disabled.'); return; }
+    const msg = [...ids].join('\n');
+    alert('Data sources with values (last 7d):\n\n' + msg);
+  } catch(e) { toast('❌ '+e.message); }
+}
+
 // ── GOOGLE FIT ──────────────────────────────────────────────────────
 function getGFitCfg() { return ls.get(K.GFIT,{}); }
 function saveGFitCfg(cfg) { ls.set(K.GFIT,cfg); }
@@ -2103,6 +2234,7 @@ function renderGFitSection() {
     <div style="display:flex;gap:7px;margin-top:12px;">
       ${connected
         ?`<button class="btn btn-primary btn-sm" style="flex:2" onclick="syncGoogleFitData()">🔄 Sync (last 30d)</button>
+          <button class="btn btn-ghost btn-sm btn-icon" onclick="debugGFitData()" title="Show raw data types">🔍</button>
           <button class="btn btn-ghost btn-sm btn-icon" onclick="disconnectGoogleFit()">✂️</button>`
         :`<button class="btn btn-primary btn-sm" style="flex:1" onclick="loadGISScript(connectGoogleFit)">🔗 Connect Google Fit</button>`}
     </div>
