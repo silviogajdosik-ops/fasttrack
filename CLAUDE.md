@@ -97,17 +97,25 @@ Token limit prekida razgovor bez upozorenja. Sljedeća sesija ne zna ništa.
 
 ## Current State
 
-**Aktivna grana:** `v1.2-push-notifications`
-**Zadnji commit:** `v1.2.0 — Push notifications`
+**Aktivna grana:** `v1.4-gamification`
+**Zadnji commit:** `v1.4.0 — Gamification badges`
 
-### Što je implementirano (v1.2)
-- ✅ Sve iz v1.1 +
-- ✅ Push notifikacije: jutarnji check-in podsjetnik (6/7/8/9h, user bira)
-- ✅ Phase milestone alert (fires kad se promijeni faza, dok je fast aktivan)
-- ✅ Permission request flow s graceful fallback porukom
-- ✅ Notification settings u Data tabu (enable/disable, toggle milestones)
-- ✅ SW message handler za delayed showNotification
-- ⚠️ Zahtijeva HTTPS ili Add to Home Screen (file:// ne podržava SW push)
+### Što je implementirano (v1.4)
+- ✅ Sve iz v1.3 +
+- ✅ BADGES array: 7 achievementa (12h, 24h, 36h, 48h, 72h, 5d, 7d)
+- ✅ checkBadges(hrs) u tick() — detektuje novi badge svake 10s
+- ✅ showBadgeToast() — animirani badge unlock toast (5s, veći od normalnog)
+- ✅ buildBadgeRack() — badge rack u aktivnom fastu (earned + next s countdown)
+- ✅ buildBadgeGrid() — full badge grid u Data tabu (earned/locked state, ×count)
+- ✅ Badge count na idle screenu (X/7 badges earned lifetime)
+- ✅ Badges se čuvaju lifetime kroz više fastova (ft_badges key)
+- ✅ Reset briše i BADGES + LBADGE
+
+### Arhitektura badgea
+- `ft_badges` — array `{ id, earnedAt, fastStart }` — lifetime, čuva sve fastove
+- `ft_lbadge` — last checked hrs (za debounce)
+- `thisFastBadgeIds()` — Set ID-eva zarađenih u tekućem fastu
+- Badge rack pokazuje: earned this fast (boja) + next badge (dashed, countdown)
 
 ---
 
@@ -116,10 +124,10 @@ Token limit prekida razgovor bez upozorenja. Sljedeća sesija ne zna ništa.
 | Prioritet | Verzija | Feature |
 |-----------|---------|---------|
 | ~~🥇~~ | ~~v1.2~~ | ~~Push notifikacije~~ ✅ Done |
-| 🥇 | v1.3 | Google Fit / Health Connect API → auto-import Xiaomi Scale 2 podataka |
-| 🥈 | v1.4 | Gamifikacija / badges (12h, 24h, 48h, 72h, 5d achievements) |
-| 🥈 | v1.5 | Wellbeing dnevnik po check-inu (energija, glad, mentalna jasnoća 1–5) |
-| 🥉 | v1.6 | Shareable infographic (Canvas → PNG za social/camera roll) |
+| ~~🥇~~ | ~~v1.3~~ | ~~Google Fit / Health Connect API~~ ✅ Done |
+| ~~🥈~~ | ~~v1.4~~ | ~~Gamifikacija / badges~~ ✅ Done |
+| 🥇 | v1.5 | Wellbeing dnevnik po check-inu (energija, glad, mentalna jasnoća 1–5) |
+| 🥈 | v1.6 | Shareable infographic (Canvas → PNG za social/camera roll) |
 | 🥉 | v2.0 | Multi-fast history, trend analiza kroz tjedne/mjesece |
 
 ---
