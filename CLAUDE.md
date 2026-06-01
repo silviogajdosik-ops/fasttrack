@@ -12,12 +12,13 @@ All data in `localStorage`. Dark mode, mobile-first, Service Worker offline supp
 
 ## File Structure
 ```
-fasttrack.html           ← v1.0  (branch: master)
-fasttrack-v1.1.html      ← v1.1  (branch: v1.1-profile-online-edittime)
-fasttrack-v1.2.html      ← v1.2  (branch: v1.2-push-notifications)  ← AKTIVAN
+fasttrack.html           ← AKTIVAN (uvijek najnovija verzija, currently v1.5.3)
+start-fasttrack.bat      ← lokalni server launcher (http://localhost:8080/fasttrack.html)
 CLAUDE.md                ← this file, always auto-loaded
 CLAUDE_LESSONS_LEARNED.md ← ARCHIVED — do not auto-read, see note inside
 ```
+
+**Naming konvencija (od v1.5.3):** Fiksno ime `fasttrack.html` — git branches i tagovi čuvaju historiju verzija. Ne trebamo versioned fajlove više. `fasttrack-v*.html` fajlovi su legacy, možemo ih brisati.
 
 **Ne čitaj stare verzije** osim ako eksplicitno uspoređuješ. Koristi `grep` umjesto čitanja cijelog fajla.
 
