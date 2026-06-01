@@ -1300,6 +1300,7 @@ function tick() {
   const tl=document.getElementById('timeline');
   if(tl) tl.innerHTML=buildTimeline(hrs);
   checkPhaseMilestone(hrs);
+  checkBadges(hrs);
 }
 
 function buildTimeline(hrs) {
