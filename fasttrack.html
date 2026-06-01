@@ -791,6 +791,18 @@ input[type=datetime-local]::-webkit-calendar-picker-indicator { filter:invert(.5
   </div>
 </div>
 
+
+<!-- GFit Conflict Modal -->
+<div class="overlay" id="gfit-conflict-modal">
+  <div class="modal">
+    <div class="mpip"></div>
+    <h3 class="modal-title">⚡ Google Fit Conflicts</h3>
+    <p class="modal-desc">Fit data differs from existing check-ins within 1h. Choose which to keep:</p>
+    <div id="gfit-conflict-list"></div>
+    <button class="btn btn-ghost mt8" onclick="closeModal('gfit-conflict-modal')">Cancel</button>
+  </div>
+</div>
+
 <!-- Google Fit Help Modal -->
 <div class="overlay" id="gfit-help-modal">
   <div class="modal">
@@ -948,7 +960,7 @@ function buildBadgeGrid() {
 }
 
 // ── STORAGE ────────────────────────────────────────────────────────
-const APP_VERSION = 'v1.6.0';
+const APP_VERSION = 'v1.6.2';
 const K = { PROF:'ft_profile', STATE:'ft_state', CHKINS:'ft_checkins', DONE:'ft_done', QUOTE:'ft_quote', NOTIF:'ft_notif', LPHASE:'ft_lphase', GFIT:'ft_gfit', BADGES:'ft_badges', LBADGE:'ft_lbadge' };
 const ls = {
   get:(k,d=null)=>{ try{return JSON.parse(localStorage.getItem(k))??d}catch{return d} },
@@ -1009,7 +1021,7 @@ function init() {
 
 function registerSW() {
   if (!('serviceWorker' in navigator)) return;
-  const c = `const C='ft-v1.6.1';
+  const c = `const C='ft-v1.6.2';
     self.addEventListener('install',e=>{ e.waitUntil(Promise.resolve()); self.skipWaiting(); });
     self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));
     self.addEventListener('message',e=>{
@@ -1282,7 +1294,7 @@ function buildActiveFast(state) {
       <div class="badge-rack" id="badge-rack">${buildBadgeRack()}</div>
     </div>
 
-    <div class="ac fade">
+    <div class="ac fade" style="margin-bottom:80px">
       <button class="btn btn-ghost"  onclick="showTab('checkin')">📊 &nbsp;Morning Check-in</button>
       <button class="btn btn-ghost"  onclick="openShareModal()">📸 &nbsp;Share</button>
       <button class="btn btn-danger" onclick="openModal('end-modal')">🏁 &nbsp;End Fast</button>
@@ -1941,30 +1953,91 @@ async function syncGoogleFitData() {
 }
 
 function importGFitBuckets(buckets) {
-  const existing=checkins();
-  const dates=new Set(existing.map(c=>c.datetime.slice(0,10)));
-  const toAdd=[]; let n=0;
-  for(const b of buckets){
-    let wt=null, fat=null;
-    const d=new Date(parseInt(b.startTimeMillis));
-    const ds=d.toISOString().slice(0,10);
-    for(const set of (b.dataset||[])){
-      for(const pt of (set.point||[])){
-        if(set.dataSourceId.includes('com.google.weight') && pt.value?.[0]?.fpVal) wt=pt.value[0].fpVal;
-        if(set.dataSourceId.includes('body.fat') && pt.value?.[0]?.fpVal) fat=pt.value[0].fpVal;
+  const existing = checkins();
+  const existingTs = existing.map(c => ({ t: new Date(c.datetime).getTime(), c }));
+  const toAdd = [], conflicts = []; let n = 0;
+  const seenTypes = new Set();
+
+  for (const b of buckets) {
+    let wt = null, fat = null;
+    const d = new Date(parseInt(b.startTimeMillis));
+    const ds = d.toISOString().slice(0, 10);
+    const bucketTs = new Date(ds + 'T08:00').getTime();
+
+    for (const set of (b.dataset || [])) {
+      const sid = set.dataSourceId || '';
+      for (const pt of (set.point || [])) {
+        const val = pt.value?.[0]?.fpVal;
+        if (!val) continue;
+        if (sid.includes('weight')) { wt = val; seenTypes.add('weight'); }
+        else if (sid.includes('fat')) { fat = val; seenTypes.add('body.fat'); }
       }
     }
-    if(wt&&fat&&!dates.has(ds)){
-      toAdd.push({datetime:ds+'T08:00',weight:Math.round(wt*10)/10,bodyFat:Math.round(fat*10)/10,id:Date.now()+n,src:'gfit'});
-      n++;
+
+    if (!wt) continue;
+
+    const nearby = existingTs.find(e => Math.abs(e.t - bucketTs) < 3600000);
+    if (nearby) {
+      const wtR = Math.round(wt * 10) / 10;
+      const fatR = fat ? Math.round(fat * 10) / 10 : null;
+      const same = nearby.c.weight === wtR && (fatR === null || nearby.c.bodyFat === fatR);
+      if (!same) conflicts.push({ existing: nearby.c, incoming: { datetime: ds+'T08:00', weight: wtR, bodyFat: fatR, src:'gfit' } });
+      continue;
     }
+
+    toAdd.push({ datetime: ds+'T08:00', weight: Math.round(wt*10)/10, bodyFat: fat ? Math.round(fat*10)/10 : null, id: Date.now()+n, src:'gfit' });
+    n++;
   }
-  if(toAdd.length){
-    const all=[...existing,...toAdd].sort((a,b)=>new Date(a.datetime)-new Date(b.datetime));
-    ls.set(K.CHKINS,all);
+
+  if (toAdd.length) {
+    const all = [...existing, ...toAdd].sort((a,b) => new Date(a.datetime)-new Date(b.datetime));
+    ls.set(K.CHKINS, all);
   }
+
+  if (seenTypes.size === 0) toast('⚠️ Fit returned 0 data points. Check Zepp Life → Google Fit sync.');
+  else if (!seenTypes.has('body.fat')) toast('\u2139\ufe0f Weight data found, no body fat. ' + n + ' entries imported.');
+
+  if (conflicts.length) showGFitConflicts(conflicts);
   return n;
 }
+
+let _gfitConflicts = [];
+function showGFitConflicts(conflicts) {
+  _gfitConflicts = [...conflicts];
+  const el = document.getElementById('gfit-conflict-list');
+  if (!el) return;
+  el.innerHTML = _gfitConflicts.map((cf, i) => `
+    <div class="card" style="margin-bottom:10px;font-size:.82rem">
+      <div style="color:var(--text2);margin-bottom:6px">${fmtDate(cf.existing.datetime, true)}</div>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <div style="flex:1;background:var(--surf3);padding:8px;border-radius:8px">
+          <div style="color:var(--text3);font-size:.7rem;margin-bottom:2px">Existing</div>
+          <div>${cf.existing.weight} kg${cf.existing.bodyFat ? ' / '+cf.existing.bodyFat+'%' : ''}</div>
+        </div>
+        <div style="flex:1;background:var(--surf3);padding:8px;border-radius:8px;border:1px solid var(--cyan)">
+          <div style="color:var(--cyan);font-size:.7rem;margin-bottom:2px">Google Fit</div>
+          <div>${cf.incoming.weight} kg${cf.incoming.bodyFat ? ' / '+cf.incoming.bodyFat+'%' : ''}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" style="flex:1" onclick="resolveConflict(${i},'keep')">Keep existing</button>
+        <button class="btn btn-primary btn-sm" style="flex:1" onclick="resolveConflict(${i},'replace')">Use Fit data</button>
+      </div>
+    </div>`).join('');
+  openModal('gfit-conflict-modal');
+}
+
+function resolveConflict(i, action) {
+  const cf = _gfitConflicts[i];
+  if (action === 'replace') {
+    const cks = checkins().map(c => c.id===cf.existing.id ? {...c, weight:cf.incoming.weight, bodyFat:cf.incoming.bodyFat, src:'gfit'} : c);
+    ls.set(K.CHKINS, cks);
+  }
+  _gfitConflicts.splice(i, 1);
+  if (!_gfitConflicts.length) { closeModal('gfit-conflict-modal'); renderData(); renderHome(); toast('\u2705 Conflicts resolved'); }
+  else showGFitConflicts(_gfitConflicts);
+}
+
 
 function handleCSVImport(ev) {
   const file=ev.target.files?.[0]; if(!file) return;
