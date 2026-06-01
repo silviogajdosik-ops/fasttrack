@@ -12,7 +12,7 @@ All data in `localStorage`. Dark mode, mobile-first, Service Worker offline supp
 
 ## File Structure
 ```
-fasttrack.html           ← AKTIVAN (uvijek najnovija verzija, currently v1.5.3)
+fasttrack.html           ← AKTIVAN (uvijek najnovija verzija, currently v1.6.6)
 start-fasttrack.bat      ← lokalni server launcher (http://localhost:8080/fasttrack.html)
 CLAUDE.md                ← this file, always auto-loaded
 CLAUDE_LESSONS_LEARNED.md ← ARCHIVED — do not auto-read, see note inside
@@ -35,6 +35,8 @@ CLAUDE_LESSONS_LEARNED.md ← ARCHIVED — do not auto-read, see note inside
 | `ft_quote` | `{ text, author, ts }` — online quote, cache 6h |
 | `ft_notif` | `{ enabled, checkinHour, milestones }` — notification settings |
 | `ft_lphase` | `number` — last notified phase ID (za milestone detection) |
+| `ft_badges` | `[{ id, earnedAt, fastStart }]` — lifetime, čuva sve fastove |
+| `ft_lbadge` | `number` — last checked hrs (za badge debounce) |
 
 ---
 
@@ -53,11 +55,11 @@ CLAUDE_LESSONS_LEARNED.md ← ARCHIVED — do not auto-read, see note inside
 ## Working Rules
 
 ### 1. Pisanje/editiranje fajlova
-- **Write tool (novi fajl):** ✅ radi, potvrđeno do 1373 linije
+- **Write tool (novi fajl):** ✅ radi
 - **Edit tool (izmjena postojećeg, > ~500 linija):** ⚠️ rizik od tihog truncationa
 - **Sigurno rješenje za edit velikih HTML fajlova:** piši Python skript u bash:
   ```python
-  path = "/sessions/.../mnt/Post/fasttrack-vX.Y.html"
+  path = "/sessions/.../mnt/Post/fasttrack.html"
   with open(path, 'r') as f: content = f.read()
   old = "tekst koji mijenjamo"
   new = "novi tekst"
@@ -67,6 +69,7 @@ CLAUDE_LESSONS_LEARNED.md ← ARCHIVED — do not auto-read, see note inside
   print("Done:", len(content.splitlines()), "lines")
   ```
 - Nakon bilo kojeg edita: `tail -5 fajl` da provjeriš kraj
+- **CLAUDE.md editovanje:** koristiti Write tool (ne Edit, ne Python replace) — kraći fajl, Write je siguran
 
 ### 2. Git — uvijek PowerShell, nikad bash sandbox
 ```powershell
@@ -75,17 +78,16 @@ CLAUDE_LESSONS_LEARNED.md ← ARCHIVED — do not auto-read, see note inside
 Set-Location "C:\Users\silvi\Desktop\Post\Post"
 git checkout -b vX.Y-opis
 git add .; git commit -m "vX.Y.Z — opis"
+git push origin v1.5-wellbeing-journal
 ```
 
 ### 3. Naming konvencija
-- Verzije: `fasttrack-vX.Y.html`
 - Git branch: `vX.Y-kratki-opis`
 - Commit: `vX.Y.Z — opis promjena`
 
 ### 4. Service Worker cache
 Kad mijenjamo CSS ili JS unutar HTML fajla, bumpa string u SW kodu:
 ```js
-// Unutar inline SW blob (u svakom HTML fajlu):
 const C = 'ft-v1.1'; // ← bumpa na ft-v1.2, ft-v1.3, itd.
 ```
 Bez bumpa browser servira stari cached CSS.
@@ -98,37 +100,46 @@ Token limit prekida razgovor bez upozorenja. Sljedeća sesija ne zna ništa.
 
 ## Current State
 
+**Repo:** `https://github.com/silviogajdosik-ops/fasttrack.git`
+**Live:** `https://silviogajdosik-ops.github.io/fasttrack/fasttrack.html`
+**Lokalni server:** `start-fasttrack.bat` → `http://localhost:8080/fasttrack.html`
 **Aktivna grana:** `v1.5-wellbeing-journal`
-**Zadnji commit:** `v1.5.0 — Wellbeing journal (energy, hunger, mental clarity)`
+**Zadnji commit:** `v1.6.6 — fix profile modal infinite recursion (name btn + Edit btn)`
 
-### Što je implementirano (v1.5)
-- ✅ Sve iz v1.4 +
-- ✅ Wellbeing rating sekcija na check-in formu (3 grupe × 5 emoji-buttona)
-- ✅ Energy (😴😩😐💪⚡), Hunger (🔥😫😐🙂😌), Mental Clarity (🌫️😵🤔💡🧠)
-- ✅ wbSelect() + wbState objekt — tap-to-select s color highlight per kategorija
-- ✅ saveCheckin() čuva `wb: { energy, hunger, clarity }` uz svaki check-in
-- ✅ renderCIHistory() prikazuje wellbeing chips ispod svake unosa
-- ✅ CSV export uključuje 3 wellbeing kolone
-- ✅ Wellbeing je opcionalno — može se snimiti check-in bez ratinga
+---
 
-### Google Fit token fix (v1.5.1)
-- `syncGoogleFitData()` sada koristi `isGFitConnected()` (uključuje expiry check)
-- Ako token istekne → auto re-auth (`connectGoogleFit()`) umjesto samo poruke o grešci
-- UI prikazuje kada token ističe (HH:MM, X min remaining) dok je konektovan
+## Verzijska historija
 
-### Serija fixeva v1.6.x (post-deploy)
-- v1.6.1 — Version broj u headeru + Data tabu; nav overlap fix (margin-bottom 80px)
-- v1.6.2 — GFit: fleksibilan import (weight bez fat), ±1h dedup, conflict resolution UI, dijagnostički toast
-- v1.6.3 — Check-in CRUD: ✏️ edit, 🗑️ delete, ＋ Add Entry; GFit 🔍 debug (pokazuje stvarne dataSourceId-eve)
-- v1.6.4 — GFit: UTC→local datum fix (getDate() umjesto toISOString())
-- v1.6.5 — GFit: koristi stvarni timestamp mjerenja (pt.startTimeNanos) umjesto bucket ponoći ✅
+| Verzija | Feature |
+|---------|---------|
+| v1.0 | Osnovna PWA — timer, faze, check-in, end-fast report |
+| v1.1 | Push notifikacije (Service Worker) |
+| v1.2 | Google Fit / Health Connect API integracija |
+| v1.3 | Badges / gamifikacija — 7 achievementa |
+| v1.4 | Badge rack u aktivnom fastu, grid u Data tabu |
+| v1.5.0 | Wellbeing journal — Energy/Hunger/Clarity (1–5 emoji) na check-in, history chips, CSV kolone |
+| v1.5.1 | GFit token auto re-auth (isGFitConnected + expiry check) |
+| v1.5.2 | Fix JS syntax bug (apostrophe u motivational strings) |
+| v1.5.3 | Rename na `fasttrack.html` (fiksno ime) |
+| v1.6.0 | Shareable infographic — Canvas 1080×1080 PNG, Download + Web Share API |
+| v1.6.1 | Version broj u headeru + Data tabu; nav overlap fix (margin-bottom 80px) |
+| v1.6.2 | GFit: fleksibilan import (weight bez fat), ±1h dedup, conflict resolution modal, dijagnostički toast |
+| v1.6.3 | Check-in CRUD: ✏️ edit, 🗑️ delete, ＋ Add Entry; GFit 🔍 debug modal (stvarni dataSourceId-evi) |
+| v1.6.4 | GFit: UTC→local datum fix (getDate() umjesto toISOString()) |
+| v1.6.5 | GFit: stvarni timestamp mjerenja iz `pt.startTimeNanos` umjesto bucket ponoći |
+| v1.6.6 | Fix: `openProfileModal()` pozivao `openModal()` rekurzivno → stack overflow → 👤 name btn i ✏️ Edit btn nisu radili |
 
-### Napomena o Google Fit / Zepp Life (potvrđeno)
+---
+
+## Napomene o integracijama
+
+### Google Fit / Zepp Life (potvrđeno)
 - Zepp Life **ne šalje body fat** prema Google Fit API-ju — samo tjelesna težina
 - Body fat se mora unositi ručno (✏️ edit) ili kroz Zepp Life CSV export
-- Aktivni GitHub Pages: https://silviogajdosik-ops.github.io/fasttrack/fasttrack.html
+- Google OAuth: Authorized JS origins mora sadržavati `https://silviogajdosik-ops.github.io`
+- GitHub Pages: svaki `git push` origin deploya automatski (~1 min)
 
-### Arhitektura badgea (v1.4)
+### Badge arhitektura
 - `ft_badges` — array `{ id, earnedAt, fastStart }` — lifetime, čuva sve fastove
 - `ft_lbadge` — last checked hrs (za debounce)
 - `thisFastBadgeIds()` — Set ID-eva zarađenih u tekućem fastu
@@ -136,22 +147,18 @@ Token limit prekida razgovor bez upozorenja. Sljedeća sesija ne zna ništa.
 
 ---
 
-## Next Up (prioritet)
+## Next Up
 
 | Prioritet | Verzija | Feature |
 |-----------|---------|---------|
-| ~~🥇~~ | ~~v1.2~~ | ~~Push notifikacije~~ ✅ Done |
-| ~~🥇~~ | ~~v1.3~~ | ~~Google Fit / Health Connect API~~ ✅ Done |
-| ~~🥈~~ | ~~v1.4~~ | ~~Gamifikacija / badges~~ ✅ Done |
-| 🥇 | v1.5 | Wellbeing dnevnik po check-inu (energija, glad, mentalna jasnoća 1–5) |
-| 🥈 | v1.6 | Shareable infographic (Canvas → PNG za social/camera roll) |
-| 🥉 | v2.0 | Multi-fast history, trend analiza kroz tjedne/mjesece |
+| 🥇 | v2.0 | Multi-fast history, trend analiza kroz tjedne/mjesece |
 
 ---
 
 ## Brzi debugging checklist
 
-1. App se ne učitava nakon edita → `tail -20 fajl.html` (truncation?)
-2. CSS promjena nema efekta → bump SW cache string
+1. App se ne učitava nakon edita → `tail -20 fasttrack.html` (truncation?)
+2. CSS promjena nema efekta → bump SW cache string (`const C = 'ft-vX.X'`)
 3. Git greška → koristiti PowerShell, ne bash sandbox
 4. LocalStorage problem → DevTools → Application → Local Storage → check keys
+5. Modal se ne otvara → provjeri rekurziju u `openModal` / `open*Modal` funkcijama
