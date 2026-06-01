@@ -110,6 +110,11 @@ Token limit prekida razgovor bez upozorenja. Sljedeća sesija ne zna ništa.
 - ✅ CSV export uključuje 3 wellbeing kolone
 - ✅ Wellbeing je opcionalno — može se snimiti check-in bez ratinga
 
+### Google Fit token fix (v1.5.1)
+- `syncGoogleFitData()` sada koristi `isGFitConnected()` (uključuje expiry check)
+- Ako token istekne → auto re-auth (`connectGoogleFit()`) umjesto samo poruke o grešci
+- UI prikazuje kada token ističe (HH:MM, X min remaining) dok je konektovan
+
 ### Arhitektura badgea (v1.4)
 - `ft_badges` — array `{ id, earnedAt, fastStart }` — lifetime, čuva sve fastove
 - `ft_lbadge` — last checked hrs (za debounce)
