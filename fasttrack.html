@@ -1096,7 +1096,7 @@ function openProfileModal() {
   document.getElementById('pm-age').value    = p.age    || '';
   document.getElementById('pm-gender').value = p.gender || 'Male';
   document.getElementById('pm-height').value = p.height || '';
-  openModal('profile-modal');
+  // NOTE: do NOT call openModal here — openModal calls us for pre-fill, then shows the modal itself
 }
 
 function saveProfile() {
