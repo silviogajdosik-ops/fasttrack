@@ -997,7 +997,7 @@ function buildBadgeGrid() {
 
 // ── STORAGE ────────────────────────────────────────────────────────
 const APP_VERSION = 'v1.6.5';
-const K = { PROF:'ft_profile', STATE:'ft_state', CHKINS:'ft_checkins', DONE:'ft_done', QUOTE:'ft_quote', NOTIF:'ft_notif', LPHASE:'ft_lphase', GFIT:'ft_gfit', BADGES:'ft_badges', LBADGE:'ft_lbadge' };
+const K = { PROF:'ft_profile', STATE:'ft_state', CHKINS:'ft_checkins', DONE:'ft_done', HISTORY:'ft_history', QUOTE:'ft_quote', NOTIF:'ft_notif', LPHASE:'ft_lphase', GFIT:'ft_gfit', BADGES:'ft_badges', LBADGE:'ft_lbadge' };
 const ls = {
   get:(k,d=null)=>{ try{return JSON.parse(localStorage.getItem(k))??d}catch{return d} },
   set:(k,v)=>localStorage.setItem(k,JSON.stringify(v)),
@@ -1008,6 +1008,7 @@ function getProfile()  { return ls.get(K.PROF); }
 function fastState()   { return ls.get(K.STATE); }
 function checkins()    { return ls.get(K.CHKINS,[]); }
 function doneFast()    { return ls.get(K.DONE); }
+function fastHistory() { return ls.get(K.HISTORY,[]); }
 
 // ── ONLINE QUOTE ────────────────────────────────────────────────────
 async function fetchQuote() {
@@ -1043,6 +1044,9 @@ let activeTab = 'home';
 
 function init() {
   const vEl=document.getElementById('app-ver'); if(vEl) vEl.textContent=APP_VERSION;
+  // Migrate legacy ft_done -> ft_history (one-time, v2.0+)
+  const _legacyDone=ls.get(K.DONE); const _hist=ls.get(K.HISTORY);
+  if(_legacyDone&&!_hist){ ls.set(K.HISTORY,[_legacyDone]); }
   const p = getProfile();
   if (!p || !p.height || !p.name) {
     showScreen('setup-screen');
@@ -1057,7 +1061,7 @@ function init() {
 
 function registerSW() {
   if (!('serviceWorker' in navigator)) return;
-  const c = `const C='ft-v1.6.5';
+  const c = `const C='ft-v2.0';
     self.addEventListener('install',e=>{ e.waitUntil(Promise.resolve()); self.skipWaiting(); });
     self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));
     self.addEventListener('message',e=>{
@@ -1210,11 +1214,14 @@ function confirmEndFast() {
   const endTime = new Date();
   const durationMs = endTime - new Date(state.startTime);
 
-  ls.set(K.DONE, {
+  const _fastRecord = {
+    id: Date.now(),
     startTime: state.startTime, endTime: endTime.toISOString(), durationMs,
     startWeight: state.startWeight, startBodyFat: state.startBodyFat,
     finalWeight: wt, finalFat: bf, checkins: checkins()
-  });
+  };
+  ls.set(K.DONE, _fastRecord);
+  const _h=fastHistory(); _h.push(_fastRecord); ls.set(K.HISTORY,_h);
 
   ls.del(K.STATE);
   if (timerID) { clearInterval(timerID); timerID=null; }
@@ -1586,7 +1593,8 @@ function renderReport() {
       ${cks.length>1?buildChart(cks):''}`;
     return;
   }
-  if(done) el.innerHTML=buildFullReport(done);
+  if(done) el.innerHTML=buildFullReport(done)+buildHistorySection();
+  else el.innerHTML=(el.innerHTML||'')+'<div id="hist-section">'+buildHistorySection()+'</div>';
 }
 
 function buildFullReport(d){
@@ -1656,6 +1664,121 @@ function buildFullReport(d){
         Expect weight to temporarily rise as glycogen refills (~3–4g water per gram of glycogen).
       </p>
     </div>`;
+}
+
+
+// ── FAST HISTORY v2.0 ───────────────────────────────────────────────
+function buildHistorySection() {
+  const hist = fastHistory();
+  if (hist.length < 1) return '';
+  return `
+    <div style="margin-top:24px">
+      <div class="card-lbl" style="padding:0 2px 10px;font-size:.75rem;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;">📚 Fast History</div>
+      ${buildHistoryStats(hist)}
+      ${hist.length > 1 ? buildTrendChart(hist) : ''}
+      ${hist.length > 1 ? buildComparisonTable(hist) : ''}
+      ${buildFastList(hist)}
+    </div>`;
+}
+
+function buildHistoryStats(hist) {
+  const n = hist.length;
+  const totalMs = hist.reduce((s,f)=>s+f.durationMs,0);
+  const avgMs = totalMs/n;
+  const longestMs = Math.max(...hist.map(f=>f.durationMs));
+  const totalWtLost = hist.reduce((s,f)=>s+(f.startWeight-f.finalWeight),0);
+  const totalFatLost = hist.reduce((s,f)=>{
+    const sf=f.startWeight*f.startBodyFat/100, ef=f.finalWeight*f.finalFat/100;
+    return s+Math.max(0,sf-ef);
+  },0);
+  return `<div class="card fade">
+    <div class="card-lbl">All-Time Stats</div>
+    <div class="cr"><span class="cl">🏅 Total Fasts</span><span class="cv ct">${n}</span></div>
+    <div class="cr"><span class="cl">⏱️ Avg Duration</span><span class="cv ct">${fmtDurStr(avgMs)}</span></div>
+    <div class="cr"><span class="cl">🏆 Longest Fast</span><span class="cv ct">${fmtDurStr(longestMs)}</span></div>
+    <div class="cr"><span class="cl">⚖️ Total Weight Lost</span><span class="cv ct" style="color:var(--grn)">−${totalWtLost.toFixed(2)} kg</span></div>
+    <div class="cr"><span class="cl">🔥 Total Fat Lost</span><span class="cv ct" style="color:var(--grn)">−${totalFatLost.toFixed(2)} kg</span></div>
+  </div>`;
+}
+
+function buildTrendChart(hist) {
+  const sorted = [...hist].sort((a,b)=>new Date(a.startTime)-new Date(b.startTime));
+  const wts  = sorted.map(f=>f.finalWeight);
+  const bfs  = sorted.map(f=>f.finalFat);
+  const minW = Math.min(...wts), maxW = Math.max(...wts), rangeW = maxW-minW||1;
+  const W=320, H=140, PX=30, PY=12;
+  const cW=W-PX*2, cH=H-PY*2;
+  const pts = sorted.map((f,i)=>({
+    x: PX+(i/(sorted.length-1||1))*cW,
+    y: PY+(1-(f.finalWeight-minW)/rangeW)*cH,
+    w: f.finalWeight,
+    d: new Date(f.endTime)
+  }));
+  const lp = pts.map((p,i)=>`${i?'L':'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+  const fp = lp+` L${pts[pts.length-1].x.toFixed(1)} ${H-PY} L${PX} ${H-PY} Z`;
+  const grid=[0,.5,1].map(t=>{
+    const y=(PY+(1-t)*cH).toFixed(1);
+    return `<line x1="${PX}" y1="${y}" x2="${W-PX}" y2="${y}" stroke="#2a2a40" stroke-width="1"/>
+            <text x="${PX-4}" y="${(+y+4).toFixed(0)}" fill="#55556a" font-size="9" text-anchor="end">${(minW+t*rangeW).toFixed(1)}</text>`;
+  }).join('');
+  const dots = pts.map((p,i)=>`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="#a78bfa" stroke="#08080f" stroke-width="2"><title>Fast #${i+1}: ${p.w} kg</title></circle>`).join('');
+  const labels = pts.map((p,i)=>`<text x="${p.x.toFixed(1)}" y="${H-1}" fill="#55556a" font-size="8" text-anchor="middle">#${i+1}</text>`).join('');
+  return `<div class="card fade"><div class="card-lbl">Weight Trend (Final Weight per Fast)</div>
+    <div class="chart-wrap"><svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+      ${grid}
+      <path d="${fp}" fill="rgba(167,139,250,.08)" stroke="none"/>
+      <path d="${lp}" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      ${dots}${labels}
+    </svg></div></div>`;
+}
+
+function buildComparisonTable(hist) {
+  const sorted=[...hist].sort((a,b)=>new Date(a.startTime)-new Date(b.startTime));
+  const rows=sorted.map((f,i)=>{
+    const {days,hours}=fmtDur(f.durationMs);
+    const wLost=(f.startWeight-f.finalWeight).toFixed(1);
+    const fLost=Math.max(0,f.startWeight*f.startBodyFat/100-f.finalWeight*f.finalFat/100).toFixed(2);
+    const d=new Date(f.endTime);
+    return `<tr>
+      <td style="color:var(--text3);font-size:.75rem">#${i+1}<br>${d.getMonth()+1}/${d.getDate()}</td>
+      <td style="text-align:center">${days>0?days+'d ':''} ${hours}h</td>
+      <td style="text-align:center;color:var(--grn)">−${wLost}</td>
+      <td style="text-align:center;color:var(--grn)">−${fLost}</td>
+    </tr>`;
+  }).join('');
+  return `<div class="card fade"><div class="card-lbl">Fast Comparison</div>
+    <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.81rem">
+      <thead><tr style="color:var(--text3);font-size:.72rem;border-bottom:1px solid #2a2a40">
+        <th style="text-align:left;padding:4px 0">Fast</th>
+        <th style="text-align:center;padding:4px 0">Duration</th>
+        <th style="text-align:center;padding:4px 0">Wt Lost(kg)</th>
+        <th style="text-align:center;padding:4px 0">Fat Lost(kg)</th>
+      </tr></thead>
+      <tbody style="color:var(--text)">${rows}</tbody>
+    </table></div></div>`;
+}
+
+function buildFastList(hist) {
+  const sorted=[...hist].sort((a,b)=>new Date(b.startTime)-new Date(a.startTime));
+  const cards=sorted.map((f,i)=>{
+    const {days,hours}=fmtDur(f.durationMs);
+    const wLost=(f.startWeight-f.finalWeight).toFixed(1);
+    const fLost=Math.max(0,f.startWeight*f.startBodyFat/100-f.finalWeight*f.finalFat/100).toFixed(2);
+    const d=new Date(f.endTime);
+    const num=hist.length-i;
+    return `<div class="card fade" style="margin-bottom:8px;padding:12px 14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-weight:700;color:var(--text)">Fast #${num}</span>
+        <span style="font-size:.75rem;color:var(--text3)">${d.toLocaleDateString()}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;text-align:center">
+        <div><div style="font-size:.69rem;color:var(--text3)">Duration</div><div style="font-size:.88rem;color:var(--cyan);font-weight:600">${days>0?days+'d ':''} ${hours}h</div></div>
+        <div><div style="font-size:.69rem;color:var(--text3)">Wt Lost</div><div style="font-size:.88rem;color:var(--grn);font-weight:600">−${wLost} kg</div></div>
+        <div><div style="font-size:.69rem;color:var(--text3)">Fat Lost</div><div style="font-size:.88rem;color:var(--grn);font-weight:600">−${fLost} kg</div></div>
+      </div>
+    </div>`;
+  }).join('');
+  return `<div class="card-lbl" style="padding:12px 2px 6px;font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;">Previous Fasts</div>${cards}`;
 }
 
 function buildChart(cks) {
@@ -1735,11 +1858,15 @@ function exportCSV() {
     const e=c.wb?.energy||"", h=c.wb?.hunger||"", cl=c.wb?.clarity||"";
     csv+=`"${c.datetime}",${c.weight},${c.bodyFat},${fm},${(c.weight-parseFloat(fm)).toFixed(2)},${e},${h},${cl}\n`;
   });
-  if(done){
-    csv+='\n[COMPLETED FAST]\n';
-    csv+=`Start,${done.startTime}\nEnd,${done.endTime}\nDuration,${fmtDurStr(done.durationMs)}\n`;
-    csv+=`Start Weight,${done.startWeight} kg\nFinal Weight,${done.finalWeight} kg\n`;
-    csv+=`Weight Lost,${(done.startWeight-done.finalWeight).toFixed(2)} kg\n`;
+  const _allFasts=fastHistory();
+  if(_allFasts.length){
+    _allFasts.forEach((fd,fi)=>{
+      csv+=`\n[FAST #${fi+1}]\n`;
+      csv+=`Start,${fd.startTime}\nEnd,${fd.endTime}\nDuration,${fmtDurStr(fd.durationMs)}\n`;
+      csv+=`Start Weight,${fd.startWeight} kg\nFinal Weight,${fd.finalWeight} kg\n`;
+      csv+=`Weight Lost,${(fd.startWeight-fd.finalWeight).toFixed(2)} kg\n`;
+      csv+=`Start Body Fat,${fd.startBodyFat}%\nFinal Body Fat,${fd.finalFat}%\n`;
+    });
   }
   if(state){
     csv+='\n[ACTIVE FAST]\n';
@@ -1754,7 +1881,7 @@ function exportCSV() {
 
 // ── RESET ───────────────────────────────────────────────────────────
 function confirmReset() {
-  [K.PROF,K.STATE,K.CHKINS,K.DONE,K.QUOTE,K.NOTIF,K.LPHASE,K.GFIT,K.BADGES,K.LBADGE].forEach(k=>ls.del(k));
+  [K.PROF,K.STATE,K.CHKINS,K.DONE,K.HISTORY,K.QUOTE,K.NOTIF,K.LPHASE,K.GFIT,K.BADGES,K.LBADGE].forEach(k=>ls.del(k));
   if(timerID){clearInterval(timerID);timerID=null;}
   closeModal('reset-modal');
   location.reload();
