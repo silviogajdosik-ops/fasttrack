@@ -996,7 +996,7 @@ function buildBadgeGrid() {
 }
 
 // ── STORAGE ────────────────────────────────────────────────────────
-const APP_VERSION = 'v1.6.4';
+const APP_VERSION = 'v1.6.5';
 const K = { PROF:'ft_profile', STATE:'ft_state', CHKINS:'ft_checkins', DONE:'ft_done', QUOTE:'ft_quote', NOTIF:'ft_notif', LPHASE:'ft_lphase', GFIT:'ft_gfit', BADGES:'ft_badges', LBADGE:'ft_lbadge' };
 const ls = {
   get:(k,d=null)=>{ try{return JSON.parse(localStorage.getItem(k))??d}catch{return d} },
@@ -1057,7 +1057,7 @@ function init() {
 
 function registerSW() {
   if (!('serviceWorker' in navigator)) return;
-  const c = `const C='ft-v1.6.4';
+  const c = `const C='ft-v1.6.5';
     self.addEventListener('install',e=>{ e.waitUntil(Promise.resolve()); self.skipWaiting(); });
     self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));
     self.addEventListener('message',e=>{
@@ -2091,20 +2091,26 @@ function importGFitBuckets(buckets) {
 
   for (const b of buckets) {
     let wt = null, fat = null;
-    const d = new Date(parseInt(b.startTimeMillis));
-    // Local date — toISOString() gives UTC which is wrong for UTC+ timezones
-    const ds = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-    const bucketTs = new Date(ds + 'T08:00').getTime();
+    let ptTs = null; // actual measurement timestamp from data point
 
     for (const set of (b.dataset || [])) {
       const sid = set.dataSourceId || '';
       for (const pt of (set.point || [])) {
         const val = pt.value?.[0]?.fpVal;
         if (!val) continue;
-        if (sid.includes('weight')) { wt = val; seenTypes.add('weight'); }
+        // Use actual point time (nanoseconds → ms), fallback to bucket start
+        const ts = pt.startTimeNanos ? Math.round(parseInt(pt.startTimeNanos)/1e6) : parseInt(b.startTimeMillis);
+        if (sid.includes('weight')) { wt = val; ptTs = ts; seenTypes.add('weight'); }
         else if (sid.includes('fat')) { fat = val; seenTypes.add('body.fat'); }
       }
     }
+
+    // Use actual measurement time; fallback to local-date bucket if no point time
+    const measureTs = ptTs || parseInt(b.startTimeMillis);
+    const md = new Date(measureTs);
+    const ds = md.getFullYear()+'-'+String(md.getMonth()+1).padStart(2,'0')+'-'+String(md.getDate()).padStart(2,'0');
+    const timeStr = String(md.getHours()).padStart(2,'0')+':'+String(md.getMinutes()).padStart(2,'0');
+    const bucketTs = measureTs;
 
     if (!wt) continue;
 
@@ -2113,11 +2119,11 @@ function importGFitBuckets(buckets) {
       const wtR = Math.round(wt * 10) / 10;
       const fatR = fat ? Math.round(fat * 10) / 10 : null;
       const same = nearby.c.weight === wtR && (fatR === null || nearby.c.bodyFat === fatR);
-      if (!same) conflicts.push({ existing: nearby.c, incoming: { datetime: ds+'T08:00', weight: wtR, bodyFat: fatR, src:'gfit' } });
+      if (!same) conflicts.push({ existing: nearby.c, incoming: { datetime: ds+'T'+timeStr, weight: wtR, bodyFat: fatR, src:'gfit' } });
       continue;
     }
 
-    toAdd.push({ datetime: ds+'T08:00', weight: Math.round(wt*10)/10, bodyFat: fat ? Math.round(fat*10)/10 : null, id: Date.now()+n, src:'gfit' });
+    toAdd.push({ datetime: ds+'T'+timeStr, weight: Math.round(wt*10)/10, bodyFat: fat ? Math.round(fat*10)/10 : null, id: Date.now()+n, src:'gfit' });
     n++;
   }
 
