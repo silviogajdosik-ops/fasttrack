@@ -167,7 +167,7 @@ input[type=datetime-local]::-webkit-calendar-picker-indicator { filter:invert(.5
 .nav-btn .ni { font-size:1.2rem; }
 
 /* ===== LAYOUT ===== */
-#app { max-width:480px; margin:0 auto; padding-bottom:88px; }
+#app { max-width:480px; margin:0 auto; padding-bottom:130px; }
 .tab { display:none; }
 .tab.active { display:block; }
 .pad  { padding:16px 16px 0; }
@@ -400,6 +400,87 @@ input[type=datetime-local]::-webkit-calendar-picker-indicator { filter:invert(.5
 @keyframes t-in{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
 @keyframes t-out{from{opacity:1}to{opacity:0}}
 
+/* ===== BADGES ===== */
+.badge-rack {
+  display:flex; flex-wrap:wrap; gap:8px; padding:4px 0 2px;
+}
+.br-badge {
+  display:flex; flex-direction:column; align-items:center;
+  background:var(--surf3); border:1px solid var(--border);
+  border-radius:var(--r-sm); padding:8px 10px; min-width:80px;
+}
+.br-badge.earned {
+  border-color:var(--bc,var(--cyan));
+  box-shadow:0 0 12px color-mix(in srgb,var(--bc,var(--cyan)) 30%,transparent);
+  animation:badge-pop .4s ease-out;
+}
+.br-badge.next { border-style:dashed; opacity:.55; }
+.br-icon { font-size:1.6rem; line-height:1; margin-bottom:3px; }
+.br-name { font-size:.62rem; font-weight:700; color:var(--text2); text-align:center; line-height:1.2; }
+.br-eta  { font-size:.6rem; color:var(--text3); margin-top:3px; }
+
+.badge-grid {
+  display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;
+}
+.bg-badge {
+  background:var(--surf2); border:1px solid var(--border);
+  border-radius:var(--r-sm); padding:12px 10px;
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+}
+.bg-badge.earned { border-color:rgba(255,255,255,.15); }
+.bg-badge.locked { opacity:.4; }
+.bg-icon  { font-size:2rem; line-height:1; }
+.bg-name  { font-size:.72rem; font-weight:700; text-align:center; line-height:1.2; }
+.bg-desc  { font-size:.62rem; color:var(--text3); text-align:center; line-height:1.35; }
+.bg-count { font-size:.68rem; font-weight:700; margin-top:2px; }
+.bg-locked{ font-size:.65rem; color:var(--text3); margin-top:2px; }
+
+.badge-toast {
+  padding:14px 16px !important; gap:14px !important;
+  border-radius:14px !important; white-space:normal !important;
+  border-left:3px solid var(--gold) !important; min-width:240px;
+}
+.bt-icon  { font-size:2.2rem; line-height:1; flex-shrink:0; }
+.bt-title { font-size:.7rem; color:var(--text3); text-transform:uppercase; letter-spacing:.05em; margin-bottom:2px; }
+.bt-name  { font-size:.9rem; font-weight:700; line-height:1.2; }
+.bt-desc  { font-size:.72rem; color:var(--text2); margin-top:2px; line-height:1.35; }
+
+@keyframes badge-pop {
+  0%   { transform:scale(.7); opacity:.3; }
+  60%  { transform:scale(1.08); }
+  100% { transform:scale(1); opacity:1; }
+}
+
+/* ===== WELLBEING ===== */
+.wb-group { margin-top:12px; }
+.wb-label { font-size:.75rem; font-weight:700; color:var(--text2); margin-bottom:8px; letter-spacing:.04em; }
+.wb-btns  { display:flex; gap:6px; }
+.wb-btn   {
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
+  background:var(--surf3); border:1px solid var(--border); border-radius:var(--r-sm);
+  padding:8px 4px; cursor:pointer; font-size:.95rem; transition:all .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.wb-btn span { font-size:.6rem; color:var(--text3); font-weight:600; }
+.wb-btn.active { border-color:var(--wc,var(--cyan)); background:color-mix(in srgb,var(--wc,var(--cyan)) 15%,var(--surf3)); }
+.wb-btn.active span { color:var(--wc,var(--cyan)); }
+
+.wb-row { display:flex; gap:6px; margin-top:5px; flex-wrap:wrap; }
+.wb-chip { font-size:.72rem; padding:2px 8px; border-radius:100px;
+  background:var(--surf3); border:1px solid var(--border); white-space:nowrap; }
+
+/* ===== SHARE ===== */
+.share-preview {
+  width:100%; border-radius:var(--r-sm); display:block;
+  border:1px solid var(--border); margin-bottom:16px;
+}
+.share-btns { display:flex; gap:8px; }
+
+.hist-actions { display:flex; gap:5px; margin-left:auto; }
+.hist-act { background:none; border:none; cursor:pointer; font-size:.9rem; padding:2px 4px; opacity:.5; transition:opacity .15s; }
+.hist-act:hover { opacity:1; }
+.ci-all-wrap { position:relative; }
+.ci-add-btn { position:absolute; top:0; right:0; font-size:.72rem; padding:3px 8px; }
 /* ===== UTILS ===== */
 .fade{animation:fadeup .35s ease forwards}
 @keyframes fadeup{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
@@ -459,6 +540,7 @@ input[type=datetime-local]::-webkit-calendar-picker-indicator { filter:invert(.5
     <div class="brand">
       <span class="brand-icon">⚡</span>
       <span class="brand-name">FastTrack</span>
+      <span id="app-ver" style="font-size:.6rem;color:var(--text3);margin-left:5px;font-weight:400;vertical-align:middle"></span>
     </div>
     <div class="hbtns">
       <button class="hbtn" id="profile-btn" onclick="openModal('profile-modal')">👤 Profile</button>
@@ -489,8 +571,43 @@ input[type=datetime-local]::-webkit-calendar-picker-indicator { filter:invert(.5
         <label class="il" for="ci-bf">Body Fat %</label>
         <input type="number" id="ci-bf" placeholder="e.g. 20.5" step="0.1" min="2" max="70">
       </div>
+      <!-- Wellbeing ratings -->
+      <div class="wb-group">
+        <div class="wb-label">⚡ Energy</div>
+        <div class="wb-btns" id="wb-energy">
+          <button class="wb-btn" data-v="1" onclick="wbSelect('energy',1)">😴<span>1</span></button>
+          <button class="wb-btn" data-v="2" onclick="wbSelect('energy',2)">😩<span>2</span></button>
+          <button class="wb-btn" data-v="3" onclick="wbSelect('energy',3)">😐<span>3</span></button>
+          <button class="wb-btn" data-v="4" onclick="wbSelect('energy',4)">💪<span>4</span></button>
+          <button class="wb-btn" data-v="5" onclick="wbSelect('energy',5)">⚡<span>5</span></button>
+        </div>
+      </div>
+      <div class="wb-group">
+        <div class="wb-label">🍽️ Hunger</div>
+        <div class="wb-btns" id="wb-hunger">
+          <button class="wb-btn" data-v="1" onclick="wbSelect('hunger',1)">🔥<span>1</span></button>
+          <button class="wb-btn" data-v="2" onclick="wbSelect('hunger',2)">😫<span>2</span></button>
+          <button class="wb-btn" data-v="3" onclick="wbSelect('hunger',3)">😐<span>3</span></button>
+          <button class="wb-btn" data-v="4" onclick="wbSelect('hunger',4)">🙂<span>4</span></button>
+          <button class="wb-btn" data-v="5" onclick="wbSelect('hunger',5)">😌<span>5</span></button>
+        </div>
+      </div>
+      <div class="wb-group">
+        <div class="wb-label">🧠 Mental Clarity</div>
+        <div class="wb-btns" id="wb-clarity">
+          <button class="wb-btn" data-v="1" onclick="wbSelect('clarity',1)">🌫️<span>1</span></button>
+          <button class="wb-btn" data-v="2" onclick="wbSelect('clarity',2)">😵<span>2</span></button>
+          <button class="wb-btn" data-v="3" onclick="wbSelect('clarity',3)">🤔<span>3</span></button>
+          <button class="wb-btn" data-v="4" onclick="wbSelect('clarity',4)">💡<span>4</span></button>
+          <button class="wb-btn" data-v="5" onclick="wbSelect('clarity',5)">🧠<span>5</span></button>
+        </div>
+      </div>
+
       <button class="btn btn-primary" onclick="saveCheckin()">💾 &nbsp;Save Check-in</button>
-      <div id="ci-history" class="mt16"></div>
+      <div class="ci-all-wrap mt16">
+        <button class="btn btn-ghost btn-sm ci-add-btn" onclick="openEditModal()">＋ Add Entry</button>
+        <div id="ci-history"></div>
+      </div>
     </div>
   </div>
 
@@ -517,11 +634,21 @@ input[type=datetime-local]::-webkit-calendar-picker-indicator { filter:invert(.5
         </div>
       </div>
       <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;">
+          <span class="card-lbl" style="margin-bottom:0">Google Fit &amp; Import</span>
+          <button class="btn btn-ghost btn-sm btn-icon" onclick="showGFitHelp()">❓ Setup</button>
+        </div>
+        <div id="gfit-section"></div>
+      </div>
+      <div class="card">
         <div class="card-lbl">Notifications</div>
         <div id="notif-settings"></div>
       </div>
       <div class="card">
-        <div class="card-lbl">All Check-ins</div>
+        <div class="card-lbl">🏅 Achievements</div>
+        <div id="badge-grid-wrap" class="badge-grid"></div>
+
+        <div class="card-lbl" style="margin-top:18px">All Check-ins</div>
         <div id="all-checkins"></div>
       </div>
     </div>
@@ -620,6 +747,34 @@ input[type=datetime-local]::-webkit-calendar-picker-indicator { filter:invert(.5
   </div>
 </div>
 
+
+<!-- Edit / Add Check-in Modal -->
+<div class="overlay" id="ci-edit-modal">
+  <div class="modal">
+    <div class="mpip"></div>
+    <h3 class="modal-title" id="ci-edit-title">✏️ Edit Check-in</h3>
+    <div class="fp">
+      <input type="hidden" id="ci-edit-id">
+      <div class="ig">
+        <label class="il" for="ci-edit-dt">Date &amp; Time</label>
+        <input type="datetime-local" id="ci-edit-dt">
+      </div>
+      <div class="ig">
+        <label class="il" for="ci-edit-wt">Weight (kg)</label>
+        <input type="number" id="ci-edit-wt" step="0.1" min="30" max="350">
+      </div>
+      <div class="ig">
+        <label class="il" for="ci-edit-bf">Body Fat % <span style="color:var(--text3);font-size:.75rem">(optional)</span></label>
+        <input type="number" id="ci-edit-bf" step="0.1" min="2" max="70" placeholder="e.g. 20.5">
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn btn-primary" style="flex:2" onclick="saveEditCheckin()">💾 &nbsp;Save</button>
+        <button class="btn btn-ghost" style="flex:1" onclick="closeModal('ci-edit-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- End Fast -->
 <div class="overlay" id="end-modal">
   <div class="modal">
@@ -652,6 +807,56 @@ input[type=datetime-local]::-webkit-calendar-picker-indicator { filter:invert(.5
     <div class="modal-acts">
       <button class="btn btn-danger" onclick="confirmReset()">🗑️ &nbsp;Yes, Reset Everything</button>
       <button class="btn btn-ghost"  onclick="closeModal('reset-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Share Modal -->
+<div class="overlay" id="share-modal">
+  <div class="modal">
+    <div class="mpip"></div>
+    <h3 class="modal-title">📸 Share Your Journey</h3>
+    <canvas id="share-canvas" style="display:none"></canvas>
+    <img id="share-preview" class="share-preview" alt="FastTrack infographic">
+    <div class="share-btns">
+      <button class="btn btn-primary" style="flex:2" onclick="downloadInfographic()">⬇️ &nbsp;Download PNG</button>
+      <button id="btn-native-share" class="btn btn-ghost" style="flex:1;display:none" onclick="nativeShare()">↗️ Share</button>
+      <button class="btn btn-ghost btn-icon" onclick="closeModal('share-modal')">✕</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- GFit Conflict Modal -->
+<div class="overlay" id="gfit-conflict-modal">
+  <div class="modal">
+    <div class="mpip"></div>
+    <h3 class="modal-title">⚡ Google Fit Conflicts</h3>
+    <p class="modal-desc">Fit data differs from existing check-ins within 1h. Choose which to keep:</p>
+    <div id="gfit-conflict-list"></div>
+    <button class="btn btn-ghost mt8" onclick="closeModal('gfit-conflict-modal')">Cancel</button>
+  </div>
+</div>
+
+<!-- Google Fit Help Modal -->
+<div class="overlay" id="gfit-help-modal">
+  <div class="modal">
+    <div class="mpip"></div>
+    <h3 class="modal-title">🔗 Google Fit Setup</h3>
+    <p class="modal-desc">Xiaomi Scale 2 → Zepp Life → Google Fit → FastTrack. One-time setup takes ~5 min.</p>
+    <div style="font-size:.84rem;color:var(--text2);line-height:1.7;">
+      <div style="display:flex;gap:10px;margin-bottom:10px;"><span style="color:var(--cyan);font-weight:700;flex-shrink:0;">1.</span><span>Go to <strong style="color:var(--text)">console.cloud.google.com</strong> → New project → name it "FastTrack"</span></div>
+      <div style="display:flex;gap:10px;margin-bottom:10px;"><span style="color:var(--cyan);font-weight:700;flex-shrink:0;">2.</span><span>Search "Fitness API" → Enable it</span></div>
+      <div style="display:flex;gap:10px;margin-bottom:10px;"><span style="color:var(--cyan);font-weight:700;flex-shrink:0;">3.</span><span>Credentials → Create → OAuth 2.0 Client ID → Web application</span></div>
+      <div style="display:flex;gap:10px;margin-bottom:10px;"><span style="color:var(--cyan);font-weight:700;flex-shrink:0;">4.</span><span>Authorized JS origins: add your app URL (e.g. <code style="color:var(--cyan)">https://yourname.github.io</code>)</span></div>
+      <div style="display:flex;gap:10px;margin-bottom:14px;"><span style="color:var(--cyan);font-weight:700;flex-shrink:0;">5.</span><span>Copy the Client ID into FastTrack's Google Fit section</span></div>
+      <div style="padding:10px;background:var(--surf2);border-radius:var(--r-sm);font-size:.78rem;color:var(--text3);">
+        💡 Also make sure Zepp Life is connected to Google Fit:<br>Zepp Life → Profile → Connected apps → Google Fit → Enable
+      </div>
+    </div>
+    <div class="modal-acts mt12">
+      <button class="btn btn-ghost" onclick="closeModal('gfit-help-modal')">Got it</button>
     </div>
   </div>
 </div>
@@ -698,8 +903,101 @@ const PHASES = [
       sci:'📚 BDNF elevation promotes neurogenesis and synaptic plasticity. SIRT1/SIRT3 highly active → mitochondrial biogenesis, telomere protection. Stem cell mobilization continuing across multiple tissue types.'}}
 ];
 
+// ── BADGES ────────────────────────────────────────────────────────
+const BADGES = [
+  { id:'12h',  h:12,  icon:'⚡', name:'Ketosis Spark',     color:'#00d4ff', desc:'12 hours — the metabolic switch begins' },
+  { id:'24h',  h:24,  icon:'🔥', name:'Fat Burner',        color:'#ff7043', desc:'24 hours — deep ketosis engaged' },
+  { id:'36h',  h:36,  icon:'💪', name:'Iron Will',         color:'#8b5cf6', desc:"36 hours — most people stop here. You didn't." },
+  { id:'48h',  h:48,  icon:'🧬', name:'Autophagy Active',  color:'#ffd740', desc:'48 hours — cellular cleanup at full power' },
+  { id:'72h',  h:72,  icon:'🛡️', name:'Immune Warrior',    color:'#00e676', desc:'72 hours — immune system regenerating' },
+  { id:'5d',   h:120, icon:'🌟', name:'Deep Reset Master', color:'#e040fb', desc:'5 days — profound metabolic transformation' },
+  { id:'7d',   h:168, icon:'🏆', name:'Legendary',         color:'#ffd740', desc:'7 days — you are in rare territory now' },
+];
+
+function earnedBadges()        { return ls.get(K.BADGES,[]); }
+function saveEarnedBadges(arr) { ls.set(K.BADGES,arr); }
+
+function thisFastBadgeIds() {
+  const state = fastState(); if(!state) return new Set();
+  return new Set(earnedBadges().filter(b=>b.fastStart===state.startTime).map(b=>b.id));
+}
+
+function checkBadges(hrs) {
+  const state = fastState(); if(!state) return;
+  const thisFast = thisFastBadgeIds();
+  let anyNew = false;
+  for(const badge of BADGES) {
+    if(hrs < badge.h) break;
+    if(thisFast.has(badge.id)) continue;
+    const earned = earnedBadges();
+    earned.push({ id:badge.id, earnedAt:Date.now(), fastStart:state.startTime });
+    saveEarnedBadges(earned);
+    showBadgeToast(badge);
+    anyNew = true;
+  }
+  if(anyNew) {
+    const rack = document.getElementById('badge-rack');
+    if(rack) rack.innerHTML = buildBadgeRack();
+  }
+}
+
+function showBadgeToast(badge) {
+  const w = document.getElementById('toast-wrap');
+  const el = document.createElement('div');
+  el.className = 'toast badge-toast';
+  el.style.setProperty('--bc', badge.color);
+  el.innerHTML = `<div class="bt-icon" style="color:${badge.color}">${badge.icon}</div>
+    <div><div class="bt-title">Badge Unlocked!</div>
+    <div class="bt-name" style="color:${badge.color}">${badge.name}</div>
+    <div class="bt-desc">${badge.desc}</div></div>`;
+  w.appendChild(el);
+  setTimeout(()=>el.remove(), 5000);
+}
+
+function buildBadgeRack() {
+  const thisFast = thisFastBadgeIds();
+  const state = fastState();
+  const hrs = state ? (Date.now()-new Date(state.startTime).getTime())/3600000 : 0;
+  const nextBadge = BADGES.find(b=>!thisFast.has(b.id) && hrs < b.h);
+
+  let html = [...BADGES].filter(b=>thisFast.has(b.id)).map(b=>
+    `<div class="br-badge earned" style="--bc:${b.color}">
+      <span class="br-icon">${b.icon}</span>
+      <span class="br-name" style="color:${b.color}">${b.name}</span>
+    </div>`
+  ).join('');
+
+  if(nextBadge) {
+    const rem = nextBadge.h - hrs;
+    const rh = Math.floor(rem), rm = Math.floor((rem-rh)*60);
+    html += `<div class="br-badge next">
+      <span class="br-icon">${nextBadge.icon}</span>
+      <span class="br-name">${nextBadge.name}</span>
+      <span class="br-eta">in ${rh}h ${rm}m</span>
+    </div>`;
+  }
+  if(!html) html = '<span style="color:var(--text3);font-size:.8rem;padding:4px 0">Complete a milestone to earn your first badge</span>';
+  return html;
+}
+
+function buildBadgeGrid() {
+  const allEarned = earnedBadges();
+  const allIds = new Set(allEarned.map(b=>b.id));
+  return BADGES.map(badge=>{
+    const ok = allIds.has(badge.id);
+    const times = allEarned.filter(b=>b.id===badge.id).length;
+    return `<div class="bg-badge ${ok?'earned':'locked'}">
+      <div class="bg-icon" style="${ok?'color:'+badge.color:'filter:grayscale(1)'}">${badge.icon}</div>
+      <div class="bg-name" style="${ok?'color:'+badge.color:''}">${badge.name}</div>
+      <div class="bg-desc">${badge.desc}</div>
+      ${ok ? `<div class="bg-count" style="color:${badge.color}">×${times} earned</div>` : `<div class="bg-locked">🔒 unlock at ${badge.h}h</div>`}
+    </div>`;
+  }).join('');
+}
+
 // ── STORAGE ────────────────────────────────────────────────────────
-const K = { PROF:'ft_profile', STATE:'ft_state', CHKINS:'ft_checkins', DONE:'ft_done', QUOTE:'ft_quote', NOTIF:'ft_notif', LPHASE:'ft_lphase' };
+const APP_VERSION = 'v1.9.0';
+const K = { PROF:'ft_profile', STATE:'ft_state', CHKINS:'ft_checkins', DONE:'ft_done', HISTORY:'ft_history', QUOTE:'ft_quote', NOTIF:'ft_notif', LPHASE:'ft_lphase', GFIT:'ft_gfit', BADGES:'ft_badges', LBADGE:'ft_lbadge' };
 const ls = {
   get:(k,d=null)=>{ try{return JSON.parse(localStorage.getItem(k))??d}catch{return d} },
   set:(k,v)=>localStorage.setItem(k,JSON.stringify(v)),
@@ -710,6 +1008,7 @@ function getProfile()  { return ls.get(K.PROF); }
 function fastState()   { return ls.get(K.STATE); }
 function checkins()    { return ls.get(K.CHKINS,[]); }
 function doneFast()    { return ls.get(K.DONE); }
+function fastHistory() { return ls.get(K.HISTORY,[]); }
 
 // ── ONLINE QUOTE ────────────────────────────────────────────────────
 async function fetchQuote() {
@@ -744,6 +1043,10 @@ let timerID = null;
 let activeTab = 'home';
 
 function init() {
+  const vEl=document.getElementById('app-ver'); if(vEl) vEl.textContent=APP_VERSION;
+  // Migrate legacy ft_done -> ft_history (one-time, v2.0+)
+  const _legacyDone=ls.get(K.DONE); const _hist=ls.get(K.HISTORY);
+  if(_legacyDone&&!_hist){ ls.set(K.HISTORY,[_legacyDone]); }
   const p = getProfile();
   if (!p || !p.height || !p.name) {
     showScreen('setup-screen');
@@ -753,11 +1056,12 @@ function init() {
   }
   registerSW();
   initNotifications();
+  const _gc=ls.get(K.GFIT,{}); if(_gc.clientId) loadGISScript(()=>{});
 }
 
 function registerSW() {
   if (!('serviceWorker' in navigator)) return;
-  const c = `const C='ft-v1.2';
+  const c = `const C='ft-v2.0';
     self.addEventListener('install',e=>{ e.waitUntil(Promise.resolve()); self.skipWaiting(); });
     self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));
     self.addEventListener('message',e=>{
@@ -796,7 +1100,7 @@ function openProfileModal() {
   document.getElementById('pm-age').value    = p.age    || '';
   document.getElementById('pm-gender').value = p.gender || 'Male';
   document.getElementById('pm-height').value = p.height || '';
-  openModal('profile-modal');
+  // NOTE: do NOT call openModal here — openModal calls us for pre-fill, then shows the modal itself
 }
 
 function saveProfile() {
@@ -910,11 +1214,14 @@ function confirmEndFast() {
   const endTime = new Date();
   const durationMs = endTime - new Date(state.startTime);
 
-  ls.set(K.DONE, {
+  const _fastRecord = {
+    id: Date.now(),
     startTime: state.startTime, endTime: endTime.toISOString(), durationMs,
     startWeight: state.startWeight, startBodyFat: state.startBodyFat,
     finalWeight: wt, finalFat: bf, checkins: checkins()
-  });
+  };
+  ls.set(K.DONE, _fastRecord);
+  const _h=fastHistory(); _h.push(_fastRecord); ls.set(K.HISTORY,_h);
 
   ls.del(K.STATE);
   if (timerID) { clearInterval(timerID); timerID=null; }
@@ -976,6 +1283,8 @@ function buildIdleScreen() {
   }
 
   const name = p ? p.name : 'there';
+  const totalBadges = new Set(earnedBadges().map(b=>b.id)).size;
+  const badgeNote = totalBadges > 0 ? `<p style="text-align:center;color:var(--gold);font-size:.8rem;margin-bottom:10px">🏅 ${totalBadges}/${BADGES.length} badges earned</p>` : '';
   const doneNote = done ? `<p style="text-align:center;color:var(--text3);font-size:.75rem;margin-bottom:10px;">Last fast: ${fmtDurStr(done.durationMs)}</p>` : '';
 
   return `<div class="start-hero fade">
@@ -1023,8 +1332,14 @@ function buildActiveFast(state) {
       <div class="tl-wrap" id="timeline"></div>
     </div>
 
-    <div class="ac fade">
+    <div class="card fade">
+      <div class="card-lbl">🏅 Badges This Fast</div>
+      <div class="badge-rack" id="badge-rack">${buildBadgeRack()}</div>
+    </div>
+
+    <div class="ac fade" style="margin-bottom:80px">
       <button class="btn btn-ghost"  onclick="showTab('checkin')">📊 &nbsp;Morning Check-in</button>
+      <button class="btn btn-ghost"  onclick="openShareModal()">📸 &nbsp;Share</button>
       <button class="btn btn-danger" onclick="openModal('end-modal')">🏁 &nbsp;End Fast</button>
     </div>`;
 }
@@ -1067,6 +1382,7 @@ function tick() {
   const tl=document.getElementById('timeline');
   if(tl) tl.innerHTML=buildTimeline(hrs);
   checkPhaseMilestone(hrs);
+  checkBadges(hrs);
 }
 
 function buildTimeline(hrs) {
@@ -1111,8 +1427,24 @@ async function fetchAndInjectQuote() {
 }
 
 // ── CHECK-IN ───────────────────────────────────────────────────────
+const wbState = { energy:0, hunger:0, clarity:0 };
+function wbSelect(field, val) {
+  wbState[field] = val;
+  const colors = { energy:'#00d4ff', hunger:'#ff7043', clarity:'#8b5cf6' };
+  const el = document.getElementById('wb-'+field);
+  if(!el) return;
+  el.querySelectorAll('.wb-btn').forEach(b=>{
+    const active = parseInt(b.dataset.v)===val;
+    b.classList.toggle('active', active);
+    if(active) b.style.setProperty('--wc', colors[field]);
+  });
+}
 function initCIForm() {
   document.getElementById('ci-dt').value = dtLocalStr(new Date());
+  wbState.energy=0; wbState.hunger=0; wbState.clarity=0;
+  ['energy','hunger','clarity'].forEach(f=>{
+    document.getElementById('wb-'+f)?.querySelectorAll('.wb-btn').forEach(b=>b.classList.remove('active'));
+  });
 }
 
 function saveCheckin() {
@@ -1122,7 +1454,8 @@ function saveCheckin() {
   if(!dt||isNaN(wt)||isNaN(bf)){ toast('⚠️ Fill in all fields'); return; }
 
   const cks = checkins();
-  cks.push({ datetime:dt, weight:wt, bodyFat:bf, id:Date.now() });
+  const wb = { energy:wbState.energy||null, hunger:wbState.hunger||null, clarity:wbState.clarity||null };
+  cks.push({ datetime:dt, weight:wt, bodyFat:bf, id:Date.now(), wb });
   cks.sort((a,b)=>new Date(a.datetime)-new Date(b.datetime));
   ls.set(K.CHKINS,cks);
   renderCIHistory();
@@ -1135,14 +1468,92 @@ function saveCheckin() {
 function renderCIHistory() {
   const el=document.getElementById('ci-history'); if(!el)return;
   const cks=checkins();
-  if(!cks.length){ el.innerHTML='<div class="empty">No check-ins yet</div>'; return; }
+  if(!cks.length){ el.innerHTML='<div class="empty">No check-ins yet. Tap ＋ to add one.</div>'; return; }
+  const wbIcons = { energy:['😴','😩','😐','💪','⚡'], hunger:['🔥','😫','😐','🙂','😌'], clarity:['🌫️','😵','🤔','💡','🧠'] };
   el.innerHTML=`<div class="slbl">Recent Entries</div>`+
-    [...cks].reverse().slice(0,8).map(c=>`
-    <div class="hist-item">
-      <span class="hd">${fmtDate(c.datetime,true)}</span>
-      <span class="hw">${c.weight} kg</span>
-      <span class="hf">${c.bodyFat}%</span>
-    </div>`).join('');
+    [...cks].reverse().slice(0,20).map(ck=>{
+      let wbHtml='';
+      if(ck.wb&&(ck.wb.energy||ck.wb.hunger||ck.wb.clarity)){
+        const chips=[
+          ck.wb.energy  ?`<span class="wb-chip">⚡${wbIcons.energy[ck.wb.energy-1]} ${ck.wb.energy}</span>`:'',
+          ck.wb.hunger  ?`<span class="wb-chip">🍽️${wbIcons.hunger[ck.wb.hunger-1]} ${ck.wb.hunger}</span>`:'',
+          ck.wb.clarity ?`<span class="wb-chip">🧠${wbIcons.clarity[ck.wb.clarity-1]} ${ck.wb.clarity}</span>`:'',
+        ].filter(Boolean).join('');
+        wbHtml=`<div class="wb-row" style="width:100%">${chips}</div>`;
+      }
+      const bfStr = ck.bodyFat!=null ? ck.bodyFat+'%' : '—';
+      return `<div class="hist-item" style="flex-wrap:wrap;align-items:center">
+        <span class="hd">${fmtDate(ck.datetime,true)}</span>
+        <span class="hw">${ck.weight} kg</span>
+        <span class="hf">${bfStr}</span>
+        <div class="hist-actions">
+          <button class="hist-act" onclick="openEditModal('${ck.id}')" title="Edit">✏️</button>
+          <button class="hist-act" onclick="deleteCheckin('${ck.id}')" title="Delete">🗑️</button>
+        </div>
+        ${wbHtml}
+      </div>`;
+    }).join('');
+}
+
+// ── CHECK-IN CRUD ───────────────────────────────────────────────────
+function openEditModal(id) {
+  const title = document.getElementById('ci-edit-title');
+  const idEl  = document.getElementById('ci-edit-id');
+  const dtEl  = document.getElementById('ci-edit-dt');
+  const wtEl  = document.getElementById('ci-edit-wt');
+  const bfEl  = document.getElementById('ci-edit-bf');
+
+  if (id) {
+    const ck = checkins().find(c => String(c.id) === String(id));
+    if (!ck) return;
+    title.textContent = '✏️ Edit Check-in';
+    idEl.value  = ck.id;
+    dtEl.value  = dtLocalStr(new Date(ck.datetime));
+    wtEl.value  = ck.weight;
+    bfEl.value  = ck.bodyFat != null ? ck.bodyFat : '';
+  } else {
+    title.textContent = '＋ Add Check-in';
+    idEl.value  = '';
+    dtEl.value  = dtLocalStr(new Date());
+    wtEl.value  = '';
+    bfEl.value  = '';
+  }
+  openModal('ci-edit-modal');
+}
+
+function saveEditCheckin() {
+  const id   = document.getElementById('ci-edit-id').value;
+  const dt   = document.getElementById('ci-edit-dt').value;
+  const wt   = parseFloat(document.getElementById('ci-edit-wt').value);
+  const bfRaw = document.getElementById('ci-edit-bf').value;
+  const bf   = bfRaw !== '' ? parseFloat(bfRaw) : null;
+
+  if (!dt || isNaN(wt)) { toast('⚠️ Date and weight are required'); return; }
+
+  let cks = checkins();
+  if (id) {
+    cks = cks.map(c => String(c.id)===String(id) ? {...c, datetime:dt, weight:wt, bodyFat:bf} : c);
+    toast('✅ Entry updated');
+  } else {
+    cks.push({ datetime:dt, weight:wt, bodyFat:bf, id:Date.now(), src:'manual' });
+    cks.sort((a,b) => new Date(a.datetime)-new Date(b.datetime));
+    toast('✅ Entry added');
+  }
+  ls.set(K.CHKINS, cks);
+  closeModal('ci-edit-modal');
+  renderCIHistory();
+  renderData();
+  renderHome();
+}
+
+function deleteCheckin(id) {
+  if (!confirm('Delete this check-in?')) return;
+  const cks = checkins().filter(c => String(c.id) !== String(id));
+  ls.set(K.CHKINS, cks);
+  renderCIHistory();
+  renderData();
+  renderHome();
+  toast('🗑️ Deleted');
 }
 
 // ── REPORT ─────────────────────────────────────────────────────────
@@ -1182,7 +1593,8 @@ function renderReport() {
       ${cks.length>1?buildChart(cks):''}`;
     return;
   }
-  if(done) el.innerHTML=buildFullReport(done);
+  if(done) el.innerHTML=buildFullReport(done)+buildHistorySection();
+  else el.innerHTML=(el.innerHTML||'')+'<div id="hist-section">'+buildHistorySection()+'</div>';
 }
 
 function buildFullReport(d){
@@ -1203,6 +1615,7 @@ function buildFullReport(d){
       <div class="rh-title">Fast Complete!</div>
       <div class="rh-dur">${days>0?days+'d ':''} ${hours}h fasted</div>
       <div class="rh-sub">You did something extraordinary, ${name}.</div>
+      <button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="openShareModal()">📸 &nbsp;Share Infographic</button>
     </div>
     <div class="card fade">
       <div class="card-lbl">Weight &amp; Body Composition</div>
@@ -1253,6 +1666,121 @@ function buildFullReport(d){
     </div>`;
 }
 
+
+// ── FAST HISTORY v2.0 ───────────────────────────────────────────────
+function buildHistorySection() {
+  const hist = fastHistory();
+  if (hist.length < 1) return '';
+  return `
+    <div style="margin-top:24px">
+      <div class="card-lbl" style="padding:0 2px 10px;font-size:.75rem;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;">📚 Fast History</div>
+      ${buildHistoryStats(hist)}
+      ${hist.length > 1 ? buildTrendChart(hist) : ''}
+      ${hist.length > 1 ? buildComparisonTable(hist) : ''}
+      ${buildFastList(hist)}
+    </div>`;
+}
+
+function buildHistoryStats(hist) {
+  const n = hist.length;
+  const totalMs = hist.reduce((s,f)=>s+f.durationMs,0);
+  const avgMs = totalMs/n;
+  const longestMs = Math.max(...hist.map(f=>f.durationMs));
+  const totalWtLost = hist.reduce((s,f)=>s+(f.startWeight-f.finalWeight),0);
+  const totalFatLost = hist.reduce((s,f)=>{
+    const sf=f.startWeight*f.startBodyFat/100, ef=f.finalWeight*f.finalFat/100;
+    return s+Math.max(0,sf-ef);
+  },0);
+  return `<div class="card fade">
+    <div class="card-lbl">All-Time Stats</div>
+    <div class="cr"><span class="cl">🏅 Total Fasts</span><span class="cv ct">${n}</span></div>
+    <div class="cr"><span class="cl">⏱️ Avg Duration</span><span class="cv ct">${fmtDurStr(avgMs)}</span></div>
+    <div class="cr"><span class="cl">🏆 Longest Fast</span><span class="cv ct">${fmtDurStr(longestMs)}</span></div>
+    <div class="cr"><span class="cl">⚖️ Total Weight Lost</span><span class="cv ct" style="color:var(--grn)">−${totalWtLost.toFixed(2)} kg</span></div>
+    <div class="cr"><span class="cl">🔥 Total Fat Lost</span><span class="cv ct" style="color:var(--grn)">−${totalFatLost.toFixed(2)} kg</span></div>
+  </div>`;
+}
+
+function buildTrendChart(hist) {
+  const sorted = [...hist].sort((a,b)=>new Date(a.startTime)-new Date(b.startTime));
+  const wts  = sorted.map(f=>f.finalWeight);
+  const bfs  = sorted.map(f=>f.finalFat);
+  const minW = Math.min(...wts), maxW = Math.max(...wts), rangeW = maxW-minW||1;
+  const W=320, H=140, PX=30, PY=12;
+  const cW=W-PX*2, cH=H-PY*2;
+  const pts = sorted.map((f,i)=>({
+    x: PX+(i/(sorted.length-1||1))*cW,
+    y: PY+(1-(f.finalWeight-minW)/rangeW)*cH,
+    w: f.finalWeight,
+    d: new Date(f.endTime)
+  }));
+  const lp = pts.map((p,i)=>`${i?'L':'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+  const fp = lp+` L${pts[pts.length-1].x.toFixed(1)} ${H-PY} L${PX} ${H-PY} Z`;
+  const grid=[0,.5,1].map(t=>{
+    const y=(PY+(1-t)*cH).toFixed(1);
+    return `<line x1="${PX}" y1="${y}" x2="${W-PX}" y2="${y}" stroke="#2a2a40" stroke-width="1"/>
+            <text x="${PX-4}" y="${(+y+4).toFixed(0)}" fill="#55556a" font-size="9" text-anchor="end">${(minW+t*rangeW).toFixed(1)}</text>`;
+  }).join('');
+  const dots = pts.map((p,i)=>`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="#a78bfa" stroke="#08080f" stroke-width="2"><title>Fast #${i+1}: ${p.w} kg</title></circle>`).join('');
+  const labels = pts.map((p,i)=>`<text x="${p.x.toFixed(1)}" y="${H-1}" fill="#55556a" font-size="8" text-anchor="middle">#${i+1}</text>`).join('');
+  return `<div class="card fade"><div class="card-lbl">Weight Trend (Final Weight per Fast)</div>
+    <div class="chart-wrap"><svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+      ${grid}
+      <path d="${fp}" fill="rgba(167,139,250,.08)" stroke="none"/>
+      <path d="${lp}" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      ${dots}${labels}
+    </svg></div></div>`;
+}
+
+function buildComparisonTable(hist) {
+  const sorted=[...hist].sort((a,b)=>new Date(a.startTime)-new Date(b.startTime));
+  const rows=sorted.map((f,i)=>{
+    const {days,hours}=fmtDur(f.durationMs);
+    const wLost=(f.startWeight-f.finalWeight).toFixed(1);
+    const fLost=Math.max(0,f.startWeight*f.startBodyFat/100-f.finalWeight*f.finalFat/100).toFixed(2);
+    const d=new Date(f.endTime);
+    return `<tr>
+      <td style="color:var(--text3);font-size:.75rem">#${i+1}<br>${d.getMonth()+1}/${d.getDate()}</td>
+      <td style="text-align:center">${days>0?days+'d ':''} ${hours}h</td>
+      <td style="text-align:center;color:var(--grn)">−${wLost}</td>
+      <td style="text-align:center;color:var(--grn)">−${fLost}</td>
+    </tr>`;
+  }).join('');
+  return `<div class="card fade"><div class="card-lbl">Fast Comparison</div>
+    <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.81rem">
+      <thead><tr style="color:var(--text3);font-size:.72rem;border-bottom:1px solid #2a2a40">
+        <th style="text-align:left;padding:4px 0">Fast</th>
+        <th style="text-align:center;padding:4px 0">Duration</th>
+        <th style="text-align:center;padding:4px 0">Wt Lost(kg)</th>
+        <th style="text-align:center;padding:4px 0">Fat Lost(kg)</th>
+      </tr></thead>
+      <tbody style="color:var(--text)">${rows}</tbody>
+    </table></div></div>`;
+}
+
+function buildFastList(hist) {
+  const sorted=[...hist].sort((a,b)=>new Date(b.startTime)-new Date(a.startTime));
+  const cards=sorted.map((f,i)=>{
+    const {days,hours}=fmtDur(f.durationMs);
+    const wLost=(f.startWeight-f.finalWeight).toFixed(1);
+    const fLost=Math.max(0,f.startWeight*f.startBodyFat/100-f.finalWeight*f.finalFat/100).toFixed(2);
+    const d=new Date(f.endTime);
+    const num=hist.length-i;
+    return `<div class="card fade" style="margin-bottom:8px;padding:12px 14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-weight:700;color:var(--text)">Fast #${num}</span>
+        <span style="font-size:.75rem;color:var(--text3)">${d.toLocaleDateString()}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;text-align:center">
+        <div><div style="font-size:.69rem;color:var(--text3)">Duration</div><div style="font-size:.88rem;color:var(--cyan);font-weight:600">${days>0?days+'d ':''} ${hours}h</div></div>
+        <div><div style="font-size:.69rem;color:var(--text3)">Wt Lost</div><div style="font-size:.88rem;color:var(--grn);font-weight:600">−${wLost} kg</div></div>
+        <div><div style="font-size:.69rem;color:var(--text3)">Fat Lost</div><div style="font-size:.88rem;color:var(--grn);font-weight:600">−${fLost} kg</div></div>
+      </div>
+    </div>`;
+  }).join('');
+  return `<div class="card-lbl" style="padding:12px 2px 6px;font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;">Previous Fasts</div>${cards}`;
+}
+
 function buildChart(cks) {
   if(!cks||cks.length<2) return '';
   const wts=cks.map(c=>c.weight);
@@ -1299,10 +1827,15 @@ function renderData() {
       ['Name',p.name],['Age',p.age],['Gender',p.gender],
       ['Height',p.height+' cm'],['Current BMI',bmi],
       ['Check-ins logged',cks.length],
+      ['Version',APP_VERSION],
       ['Fast active',fastState()?'Yes ('+fmtDurStr(Date.now()-new Date(fastState().startTime).getTime())+')':'No'],
     ].map(([l,v])=>`<div class="info-row"><span class="ilab">${l}</span><span class="ival">${v}</span></div>`).join('');
   }
   renderNotifSettings();
+  renderGFitSection();
+  const bg=document.getElementById('badge-grid-wrap');
+  if(bg) bg.innerHTML=buildBadgeGrid();
+
   const ac=document.getElementById('all-checkins');
   if(ac){
     const cks=checkins();
@@ -1319,16 +1852,21 @@ function renderData() {
 // ── EXPORT CSV ──────────────────────────────────────────────────────
 function exportCSV() {
   const cks=checkins(), state=fastState(), done=doneFast();
-  let csv='Date/Time,Weight (kg),Body Fat (%),Fat Mass (kg),Lean Mass (kg)\n';
+  let csv='Date/Time,Weight (kg),Body Fat (%),Fat Mass (kg),Lean Mass (kg),Energy (1-5),Hunger (1-5),Clarity (1-5)\n';
   cks.forEach(c=>{
     const fm=(c.weight*c.bodyFat/100).toFixed(2);
-    csv+=`"${c.datetime}",${c.weight},${c.bodyFat},${fm},${(c.weight-parseFloat(fm)).toFixed(2)}\n`;
+    const e=c.wb?.energy||"", h=c.wb?.hunger||"", cl=c.wb?.clarity||"";
+    csv+=`"${c.datetime}",${c.weight},${c.bodyFat},${fm},${(c.weight-parseFloat(fm)).toFixed(2)},${e},${h},${cl}\n`;
   });
-  if(done){
-    csv+='\n[COMPLETED FAST]\n';
-    csv+=`Start,${done.startTime}\nEnd,${done.endTime}\nDuration,${fmtDurStr(done.durationMs)}\n`;
-    csv+=`Start Weight,${done.startWeight} kg\nFinal Weight,${done.finalWeight} kg\n`;
-    csv+=`Weight Lost,${(done.startWeight-done.finalWeight).toFixed(2)} kg\n`;
+  const _allFasts=fastHistory();
+  if(_allFasts.length){
+    _allFasts.forEach((fd,fi)=>{
+      csv+=`\n[FAST #${fi+1}]\n`;
+      csv+=`Start,${fd.startTime}\nEnd,${fd.endTime}\nDuration,${fmtDurStr(fd.durationMs)}\n`;
+      csv+=`Start Weight,${fd.startWeight} kg\nFinal Weight,${fd.finalWeight} kg\n`;
+      csv+=`Weight Lost,${(fd.startWeight-fd.finalWeight).toFixed(2)} kg\n`;
+      csv+=`Start Body Fat,${fd.startBodyFat}%\nFinal Body Fat,${fd.finalFat}%\n`;
+    });
   }
   if(state){
     csv+='\n[ACTIVE FAST]\n';
@@ -1343,7 +1881,7 @@ function exportCSV() {
 
 // ── RESET ───────────────────────────────────────────────────────────
 function confirmReset() {
-  [K.PROF,K.STATE,K.CHKINS,K.DONE,K.QUOTE,K.NOTIF,K.LPHASE].forEach(k=>ls.del(k));
+  [K.PROF,K.STATE,K.CHKINS,K.DONE,K.HISTORY,K.QUOTE,K.NOTIF,K.LPHASE,K.GFIT,K.BADGES,K.LBADGE].forEach(k=>ls.del(k));
   if(timerID){clearInterval(timerID);timerID=null;}
   closeModal('reset-modal');
   location.reload();
@@ -1384,6 +1922,462 @@ function fmtDate(str,withTime=false) {
 }
 function fmtDur(ms){const s=Math.floor(ms/1000);return{days:Math.floor(s/86400),hours:Math.floor((s%86400)/3600),minutes:Math.floor((s%3600)/60)};}
 function fmtDurStr(ms){const{days,hours,minutes}=fmtDur(ms);let s='';if(days>0)s+=days+'d ';s+=hours+'h '+minutes+'m';return s;}
+
+// ── SHARE / INFOGRAPHIC ────────────────────────────────────────────
+function openShareModal() {
+  const d = doneFast();
+  const state = fastState();
+  if (!d && !state) { toast('⚠️ No fast data yet'); return; }
+  drawInfographic(d || buildActiveFastSnap(state));
+  if (navigator.canShare) document.getElementById('btn-native-share').style.display = '';
+  openModal('share-modal');
+}
+
+function buildActiveFastSnap(state) {
+  const ms = Date.now() - new Date(state.startTime).getTime();
+  const cks = checkins();
+  const lat = cks.length ? cks[cks.length-1] : null;
+  return {
+    durationMs: ms, isActive: true,
+    startWeight: state.startWeight, finalWeight: lat?.weight || state.startWeight,
+    startBodyFat: state.startBodyFat, finalFat: lat?.bodyFat || state.startBodyFat,
+    checkins: cks
+  };
+}
+
+function drawInfographic(d) {
+  const canvas = document.getElementById('share-canvas');
+  const S = 1080;
+  canvas.width = S; canvas.height = S;
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  ctx.fillStyle = '#08080f';
+  ctx.fillRect(0, 0, S, S);
+
+  // Subtle grid pattern
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= S; i += 60) {
+    ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,S); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(S,i); ctx.stroke();
+  }
+
+  // Glow circle behind logo
+  const grd = ctx.createRadialGradient(S/2, 160, 0, S/2, 160, 200);
+  grd.addColorStop(0, 'rgba(0,212,255,0.15)');
+  grd.addColorStop(1, 'rgba(0,212,255,0)');
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, S, 380);
+
+  // Logo
+  ctx.font = 'bold 52px -apple-system,system-ui,sans-serif';
+  ctx.fillStyle = '#00d4ff';
+  ctx.textAlign = 'center';
+  ctx.fillText('⚡ FastTrack', S/2, 100);
+
+  // Duration
+  const {days, hours} = fmtDur(d.durationMs);
+  const durStr = (days > 0 ? days+'d ' : '') + hours + 'h';
+  ctx.font = 'bold 120px -apple-system,system-ui,sans-serif';
+  ctx.fillStyle = '#eeeeff';
+  ctx.fillText(durStr, S/2, 240);
+
+  ctx.font = '28px -apple-system,system-ui,sans-serif';
+  ctx.fillStyle = '#9999bb';
+  ctx.fillText(d.isActive ? 'AND STILL GOING' : 'TOTAL TIME FASTED', S/2, 285);
+
+  // Divider
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(80, 320); ctx.lineTo(S-80, 320); ctx.stroke();
+
+  // Stats row
+  const stats = [
+    { label: 'START', val: d.startWeight.toFixed(1)+' kg', color: '#9999bb' },
+    { label: 'END',   val: d.finalWeight.toFixed(1)+' kg',  color: '#00d4ff' },
+    { label: 'LOST',  val: (Math.max(0,d.startWeight-d.finalWeight)).toFixed(1)+' kg', color: '#00e676' },
+  ];
+  const colW = S / 3;
+  stats.forEach((s, i) => {
+    const cx = colW * i + colW / 2;
+    ctx.font = 'bold 48px -apple-system,system-ui,sans-serif';
+    ctx.fillStyle = s.color;
+    ctx.textAlign = 'center';
+    ctx.fillText(s.val, cx, 400);
+    ctx.font = '22px -apple-system,system-ui,sans-serif';
+    ctx.fillStyle = '#55556a';
+    ctx.fillText(s.label, cx, 430);
+  });
+
+  // Body fat row
+  const bfLost = Math.max(0, d.startBodyFat - d.finalFat).toFixed(1);
+  ctx.font = 'bold 36px -apple-system,system-ui,sans-serif';
+  ctx.fillStyle = '#ff7043';
+  ctx.textAlign = 'center';
+  ctx.fillText(`Body Fat: ${d.startBodyFat}%  →  ${d.finalFat}%  (−${bfLost}%)`, S/2, 495);
+
+  // Divider
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.beginPath(); ctx.moveTo(80, 525); ctx.lineTo(S-80, 525); ctx.stroke();
+
+  // Phases completed
+  const hrsFasted = d.durationMs / 3600000;
+  const completedPhases = PHASES.filter(p => hrsFasted >= p.h0);
+  ctx.font = 'bold 26px -apple-system,system-ui,sans-serif';
+  ctx.fillStyle = '#55556a';
+  ctx.textAlign = 'center';
+  ctx.fillText('PHASES COMPLETED', S/2, 575);
+
+  const phW = (S - 120) / Math.min(completedPhases.length, 6);
+  completedPhases.slice(0, 6).forEach((p, i) => {
+    const cx = 60 + phW * i + phW / 2;
+    // pill background
+    ctx.fillStyle = p.color + '22';
+    roundRect(ctx, cx - phW/2 + 6, 590, phW - 12, 58, 12);
+    ctx.fillStyle = p.color;
+    ctx.font = '30px -apple-system,system-ui,sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(p.icon, cx, 624);
+    ctx.font = 'bold 17px -apple-system,system-ui,sans-serif';
+    ctx.fillText(p.range, cx, 643);
+  });
+
+  // Badges earned
+  const state = fastState();
+  const fastStart = d.isActive ? state?.startTime : ls.get(K.DONE)?.startTime;
+  const fastBadges = fastStart
+    ? BADGES.filter(b => earnedBadges().some(e => e.id === b.id && e.fastStart === fastStart))
+    : BADGES.filter(b => hrsFasted >= b.h);
+
+  if (fastBadges.length) {
+    ctx.font = 'bold 26px -apple-system,system-ui,sans-serif';
+    ctx.fillStyle = '#55556a';
+    ctx.textAlign = 'center';
+    ctx.fillText('BADGES EARNED', S/2, 690);
+    const bW = 100;
+    const totalW = fastBadges.length * bW;
+    const startX = (S - totalW) / 2;
+    fastBadges.forEach((b, i) => {
+      const cx = startX + i * bW + bW / 2;
+      ctx.font = '42px -apple-system,system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(b.icon, cx, 740);
+    });
+  }
+
+  // Bottom branding
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.beginPath(); ctx.moveTo(80, 800); ctx.lineTo(S-80, 800); ctx.stroke();
+
+  const p = getProfile();
+  if (p) {
+    ctx.font = 'bold 30px -apple-system,system-ui,sans-serif';
+    ctx.fillStyle = '#9999bb';
+    ctx.textAlign = 'center';
+    ctx.fillText(p.name + ' · ' + new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}), S/2, 850);
+  }
+  ctx.font = '24px -apple-system,system-ui,sans-serif';
+  ctx.fillStyle = '#2a2a40';
+  ctx.fillText('fasttrack.app', S/2, 900);
+
+  // Update preview
+  const img = document.getElementById('share-preview');
+  img.src = canvas.toDataURL('image/png');
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y); ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w, y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+  ctx.lineTo(x+r, y+h); ctx.arcTo(x,y+h,x,y+h-r,r);
+  ctx.lineTo(x, y+r); ctx.arcTo(x,y,x+r,y,r);
+  ctx.closePath(); ctx.fill();
+}
+
+function downloadInfographic() {
+  const canvas = document.getElementById('share-canvas');
+  const a = document.createElement('a');
+  const p = getProfile();
+  a.download = 'fasttrack-' + (p ? p.name.toLowerCase() : 'fast') + '-' + new Date().toISOString().slice(0,10) + '.png';
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+  toast('📥 Saved!');
+}
+
+async function nativeShare() {
+  const canvas = document.getElementById('share-canvas');
+  try {
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+    const file = new File([blob], 'fasttrack.png', { type: 'image/png' });
+    await navigator.share({ title: 'FastTrack', text: 'My fasting journey', files: [file] });
+  } catch(e) { if (e.name !== 'AbortError') toast('⚠️ Share not supported'); }
+}
+
+
+async function debugGFitData() {
+  const cfg = getGFitCfg();
+  if (!isGFitConnected()) { toast('⚠️ Not connected'); return; }
+  toast('🔍 Fetching raw data types...');
+  const now = Date.now();
+  const body = {
+    aggregateBy:[{dataTypeName:'com.google.weight'},{dataTypeName:'com.google.body.fat.percentage'}],
+    bucketByTime:{durationMillis:86400000},
+    startTimeMillis: now - 7*86400000,
+    endTimeMillis: now
+  };
+  try {
+    const r = await fetch('https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate', {
+      method:'POST',
+      headers:{'Authorization':'Bearer '+cfg.token,'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    const data = await r.json();
+    const ids = new Set();
+    (data.bucket||[]).forEach(b=>(b.dataset||[]).forEach(ds=>{
+      if((ds.point||[]).some(p=>p.value?.[0]?.fpVal)) ids.add(ds.dataSourceId);
+    }));
+    if(!ids.size) { toast('⚠️ No data points in last 7 days. Zepp Life sync may be disabled.'); return; }
+    const msg = [...ids].join('\n');
+    alert('Data sources with values (last 7d):\n\n' + msg);
+  } catch(e) { toast('❌ '+e.message); }
+}
+
+// ── GOOGLE FIT ──────────────────────────────────────────────────────
+function getGFitCfg() { return ls.get(K.GFIT,{}); }
+function saveGFitCfg(cfg) { ls.set(K.GFIT,cfg); }
+function isGFitConnected() { const g=getGFitCfg(); return !!(g.token && g.expiresAt > Date.now()); }
+
+function loadGISScript(cb) {
+  if(typeof google!=='undefined'&&google.accounts){ cb(); return; }
+  if(document.getElementById('gis-script')){ setTimeout(()=>{ if(typeof google!=='undefined') cb(); },800); return; }
+  const s=document.createElement('script'); s.id='gis-script';
+  s.src='https://accounts.google.com/gsi/client'; s.async=true;
+  s.onload=cb; s.onerror=()=>toast('❌ Could not load Google SDK — check internet connection');
+  document.head.appendChild(s);
+}
+
+function connectGoogleFit() {
+  const cfg=getGFitCfg();
+  if(!cfg.clientId){ toast('⚠️ Save your Client ID first'); return; }
+  if(typeof google==='undefined'||!google.accounts){ loadGISScript(connectGoogleFit); return; }
+  try {
+    google.accounts.oauth2.initTokenClient({
+      client_id: cfg.clientId,
+      scope: 'https://www.googleapis.com/auth/fitness.body.read',
+      callback: async resp => {
+        if(resp.error){ toast('❌ '+resp.error); return; }
+        saveGFitCfg({...cfg, token:resp.access_token, expiresAt:Date.now()+(resp.expires_in||3600)*1000});
+        toast('✅ Connected to Google Fit!'); renderData(); renderGFitSection();
+        await syncGoogleFitData();
+      }
+    }).requestAccessToken();
+  } catch(e) { toast('❌ '+e.message); }
+}
+
+function disconnectGoogleFit() {
+  const {clientId}=getGFitCfg(); saveGFitCfg({clientId});
+  toast('🔌 Disconnected'); renderData();
+}
+
+async function syncGoogleFitData() {
+  const cfg=getGFitCfg();
+  if(!isGFitConnected()) {
+    if(cfg.clientId) { toast('🔑 Token expired — re-authenticating…'); connectGoogleFit(); return; }
+    toast('⚠️ Not connected — save your Client ID first'); return;
+  }
+  toast('🔄 Syncing...');
+  const now=Date.now();
+  const body={
+    aggregateBy:[{dataTypeName:'com.google.weight'},{dataTypeName:'com.google.body.fat.percentage'}],
+    bucketByTime:{durationMillis:86400000},
+    startTimeMillis:now-30*86400000,
+    endTimeMillis:now
+  };
+  try {
+    const r=await fetch('https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+cfg.token,'Content-Type':'application/json'},
+      body:JSON.stringify(body)
+    });
+    if(r.status===401){ const c={...cfg}; delete c.token; delete c.expiresAt; saveGFitCfg(c); toast('🔑 Session expired — reconnect'); renderData(); return; }
+    if(!r.ok){ toast('❌ API error '+r.status); return; }
+    const data=await r.json();
+    const n=importGFitBuckets(data.bucket||[]);
+    toast(n>0?`📥 ${n} new entries imported from Google Fit`:'✅ Already up to date');
+    renderData(); renderHome();
+  } catch(e){ toast('❌ '+e.message); }
+}
+
+function importGFitBuckets(buckets) {
+  const existing = checkins();
+  const existingTs = existing.map(c => ({ t: new Date(c.datetime).getTime(), c }));
+  const toAdd = [], conflicts = []; let n = 0;
+  const seenTypes = new Set();
+
+  for (const b of buckets) {
+    let wt = null, fat = null;
+    let ptTs = null; // actual measurement timestamp from data point
+
+    for (const set of (b.dataset || [])) {
+      const sid = set.dataSourceId || '';
+      for (const pt of (set.point || [])) {
+        const val = pt.value?.[0]?.fpVal;
+        if (!val) continue;
+        // Use actual point time (nanoseconds → ms), fallback to bucket start
+        const ts = pt.startTimeNanos ? Math.round(parseInt(pt.startTimeNanos)/1e6) : parseInt(b.startTimeMillis);
+        if (sid.includes('weight')) { wt = val; ptTs = ts; seenTypes.add('weight'); }
+        else if (sid.includes('fat')) { fat = val; seenTypes.add('body.fat'); }
+      }
+    }
+
+    // Use actual measurement time; fallback to local-date bucket if no point time
+    const measureTs = ptTs || parseInt(b.startTimeMillis);
+    const md = new Date(measureTs);
+    const ds = md.getFullYear()+'-'+String(md.getMonth()+1).padStart(2,'0')+'-'+String(md.getDate()).padStart(2,'0');
+    const timeStr = String(md.getHours()).padStart(2,'0')+':'+String(md.getMinutes()).padStart(2,'0');
+    const bucketTs = measureTs;
+
+    if (!wt) continue;
+
+    const nearby = existingTs.find(e => Math.abs(e.t - bucketTs) < 3600000);
+    if (nearby) {
+      const wtR = Math.round(wt * 10) / 10;
+      const fatR = fat ? Math.round(fat * 10) / 10 : null;
+      const same = nearby.c.weight === wtR && (fatR === null || nearby.c.bodyFat === fatR);
+      if (!same) conflicts.push({ existing: nearby.c, incoming: { datetime: ds+'T'+timeStr, weight: wtR, bodyFat: fatR, src:'gfit' } });
+      continue;
+    }
+
+    toAdd.push({ datetime: ds+'T'+timeStr, weight: Math.round(wt*10)/10, bodyFat: fat ? Math.round(fat*10)/10 : null, id: Date.now()+n, src:'gfit' });
+    n++;
+  }
+
+  if (toAdd.length) {
+    const all = [...existing, ...toAdd].sort((a,b) => new Date(a.datetime)-new Date(b.datetime));
+    ls.set(K.CHKINS, all);
+  }
+
+  if (seenTypes.size === 0) toast('⚠️ Fit returned 0 data points. Check Zepp Life → Google Fit sync.');
+  else if (!seenTypes.has('body.fat')) toast('\u2139\ufe0f Weight imported (' + n + ' entries). Zepp Life does not sync body fat to Google Fit \u2014 add it manually via \u270f\ufe0f.');
+
+  if (conflicts.length) showGFitConflicts(conflicts);
+  return n;
+}
+
+let _gfitConflicts = [];
+function showGFitConflicts(conflicts) {
+  _gfitConflicts = [...conflicts];
+  const el = document.getElementById('gfit-conflict-list');
+  if (!el) return;
+  el.innerHTML = _gfitConflicts.map((cf, i) => `
+    <div class="card" style="margin-bottom:10px;font-size:.82rem">
+      <div style="color:var(--text2);margin-bottom:6px">${fmtDate(cf.existing.datetime, true)}</div>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <div style="flex:1;background:var(--surf3);padding:8px;border-radius:8px">
+          <div style="color:var(--text3);font-size:.7rem;margin-bottom:2px">Existing</div>
+          <div>${cf.existing.weight} kg${cf.existing.bodyFat ? ' / '+cf.existing.bodyFat+'%' : ''}</div>
+        </div>
+        <div style="flex:1;background:var(--surf3);padding:8px;border-radius:8px;border:1px solid var(--cyan)">
+          <div style="color:var(--cyan);font-size:.7rem;margin-bottom:2px">Google Fit</div>
+          <div>${cf.incoming.weight} kg${cf.incoming.bodyFat ? ' / '+cf.incoming.bodyFat+'%' : ''}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" style="flex:1" onclick="resolveConflict(${i},'keep')">Keep existing</button>
+        <button class="btn btn-primary btn-sm" style="flex:1" onclick="resolveConflict(${i},'replace')">Use Fit data</button>
+      </div>
+    </div>`).join('');
+  openModal('gfit-conflict-modal');
+}
+
+function resolveConflict(i, action) {
+  const cf = _gfitConflicts[i];
+  if (action === 'replace') {
+    const cks = checkins().map(c => c.id===cf.existing.id ? {...c, weight:cf.incoming.weight, bodyFat:cf.incoming.bodyFat, src:'gfit'} : c);
+    ls.set(K.CHKINS, cks);
+  }
+  _gfitConflicts.splice(i, 1);
+  if (!_gfitConflicts.length) { closeModal('gfit-conflict-modal'); renderData(); renderHome(); toast('\u2705 Conflicts resolved'); }
+  else showGFitConflicts(_gfitConflicts);
+}
+
+
+function handleCSVImport(ev) {
+  const file=ev.target.files?.[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{ const n=parseCSV(e.target.result); toast(n>0?`📥 ${n} entries imported`:'⚠️ No valid entries found — check column names'); renderData(); renderHome(); };
+  reader.readAsText(file); ev.target.value='';
+}
+
+function parseCSV(text) {
+  const lines=text.trim().split('\n'); if(lines.length<2) return 0;
+  const hdr=lines[0].toLowerCase().split(',').map(h=>h.trim().replace(/"/g,''));
+  const di=hdr.findIndex(h=>h.includes('date')||h.includes('time'));
+  const wi=hdr.findIndex(h=>h.includes('weight')||h==='kg'||h.includes('masa'));
+  const fi=hdr.findIndex(h=>h.includes('fat')||h.includes('mast'));
+  if(di<0||wi<0||fi<0) return 0;
+  const existing=checkins(), dates=new Set(existing.map(c=>c.datetime.slice(0,10)));
+  const toAdd=[]; let n=0;
+  for(let i=1;i<lines.length;i++){
+    const p=lines[i].split(',').map(x=>x.trim().replace(/"/g,''));
+    const ds=(p[di]||'').slice(0,10).replace(/\//g,'-');
+    const wt=parseFloat(p[wi]), fat=parseFloat(p[fi]);
+    if(!ds||isNaN(wt)||isNaN(fat)||dates.has(ds)) continue;
+    toAdd.push({datetime:ds+'T08:00',weight:Math.round(wt*10)/10,bodyFat:Math.round(fat*10)/10,id:Date.now()+n,src:'csv'});
+    n++;
+  }
+  if(toAdd.length){
+    const all=[...existing,...toAdd].sort((a,b)=>new Date(a.datetime)-new Date(b.datetime));
+    ls.set(K.CHKINS,all);
+  }
+  return n;
+}
+
+function saveClientId() {
+  const v=document.getElementById('gfit-cid')?.value.trim();
+  if(!v){ toast('⚠️ Paste your Client ID'); return; }
+  saveGFitCfg({clientId:v}); toast('✅ Client ID saved'); renderData();
+}
+function clearClientId() { ls.del(K.GFIT); toast('🔧 Client ID cleared'); renderData(); }
+function showGFitHelp() { openModal('gfit-help-modal'); }
+
+function renderGFitSection() {
+  const el=document.getElementById('gfit-section'); if(!el) return;
+  const cfg=getGFitCfg(), connected=isGFitConnected();
+  if(!cfg.clientId){
+    el.innerHTML=`<p style="font-size:.82rem;color:var(--text2);margin-bottom:12px;line-height:1.55;">Connect Xiaomi Scale 2 via Google Fit for automatic data sync. <span style="color:var(--text3)">Needs HTTPS hosting.</span></p>
+    <div class="ig"><label class="il" for="gfit-cid">OAuth Client ID</label>
+    <input type="text" id="gfit-cid" placeholder="Paste from Google Cloud Console"></div>
+    <button class="btn btn-primary btn-sm" onclick="saveClientId()">💾 &nbsp;Save & Connect</button>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+    <div class="ilab mb8">No Google Fit? Import CSV directly</div>
+    <label class="btn btn-ghost btn-sm" style="cursor:pointer">📂 &nbsp;Import CSV (Zepp Life / Google Fit)<input type="file" accept=".csv" onchange="handleCSVImport(event)" style="display:none"></label>
+    <p style="font-size:.7rem;color:var(--text3);margin-top:6px;">Zepp Life: Profile → Export data → Body composition</p>
+    </div>`;
+    return;
+  }
+  el.innerHTML=`
+    <div class="info-row"><span class="ilab">Status</span>
+      <span class="ival" style="color:${connected?'var(--grn)':'var(--text3)'}">${connected?'🟢 Connected':'⚪ Not connected'}</span></div>
+    <div class="info-row"><span class="ilab">Client ID</span>
+      <span style="font-size:.72rem;color:var(--text3)">${cfg.clientId.slice(0,28)}…</span></div>
+    ${connected && cfg.expiresAt ? `<div class="info-row"><span class="ilab">Token expires</span>
+      <span style="font-size:.72rem;color:var(--text3)">${new Date(cfg.expiresAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} (${Math.max(0,Math.round((cfg.expiresAt-Date.now())/60000))} min)</span></div>` : ''}
+    <div style="display:flex;gap:7px;margin-top:12px;">
+      ${connected
+        ?`<button class="btn btn-primary btn-sm" style="flex:2" onclick="syncGoogleFitData()">🔄 Sync (last 30d)</button>
+          <button class="btn btn-ghost btn-sm btn-icon" onclick="debugGFitData()" title="Show raw data types">🔍</button>
+          <button class="btn btn-ghost btn-sm btn-icon" onclick="disconnectGoogleFit()">✂️</button>`
+        :`<button class="btn btn-primary btn-sm" style="flex:1" onclick="loadGISScript(connectGoogleFit)">🔗 Connect Google Fit</button>`}
+    </div>
+    <button class="btn btn-ghost btn-sm mt8" style="font-size:.72rem" onclick="clearClientId()">Change Client ID</button>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+    <div class="ilab mb8">Or import CSV manually</div>
+    <label class="btn btn-ghost btn-sm" style="cursor:pointer">📂 &nbsp;Import CSV<input type="file" accept=".csv" onchange="handleCSVImport(event)" style="display:none"></label>
+    </div>`;
+}
 
 // ── NOTIFICATIONS ──────────────────────────────────────────────────
 const NOTIF_DEF = { enabled:false, checkinHour:7, milestones:true };
