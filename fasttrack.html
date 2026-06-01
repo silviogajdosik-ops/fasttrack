@@ -469,6 +469,13 @@ input[type=datetime-local]::-webkit-calendar-picker-indicator { filter:invert(.5
 .wb-chip { font-size:.72rem; padding:2px 8px; border-radius:100px;
   background:var(--surf3); border:1px solid var(--border); white-space:nowrap; }
 
+/* ===== SHARE ===== */
+.share-preview {
+  width:100%; border-radius:var(--r-sm); display:block;
+  border:1px solid var(--border); margin-bottom:16px;
+}
+.share-btns { display:flex; gap:8px; }
+
 /* ===== UTILS ===== */
 .fade{animation:fadeup .35s ease forwards}
 @keyframes fadeup{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
@@ -767,6 +774,22 @@ input[type=datetime-local]::-webkit-calendar-picker-indicator { filter:invert(.5
   </div>
 </div>
 
+
+<!-- Share Modal -->
+<div class="overlay" id="share-modal">
+  <div class="modal">
+    <div class="mpip"></div>
+    <h3 class="modal-title">📸 Share Your Journey</h3>
+    <canvas id="share-canvas" style="display:none"></canvas>
+    <img id="share-preview" class="share-preview" alt="FastTrack infographic">
+    <div class="share-btns">
+      <button class="btn btn-primary" style="flex:2" onclick="downloadInfographic()">⬇️ &nbsp;Download PNG</button>
+      <button id="btn-native-share" class="btn btn-ghost" style="flex:1;display:none" onclick="nativeShare()">↗️ Share</button>
+      <button class="btn btn-ghost btn-icon" onclick="closeModal('share-modal')">✕</button>
+    </div>
+  </div>
+</div>
+
 <!-- Google Fit Help Modal -->
 <div class="overlay" id="gfit-help-modal">
   <div class="modal">
@@ -983,7 +1006,7 @@ function init() {
 
 function registerSW() {
   if (!('serviceWorker' in navigator)) return;
-  const c = `const C='ft-v1.5';
+  const c = `const C='ft-v1.6';
     self.addEventListener('install',e=>{ e.waitUntil(Promise.resolve()); self.skipWaiting(); });
     self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));
     self.addEventListener('message',e=>{
@@ -1258,6 +1281,7 @@ function buildActiveFast(state) {
 
     <div class="ac fade">
       <button class="btn btn-ghost"  onclick="showTab('checkin')">📊 &nbsp;Morning Check-in</button>
+      <button class="btn btn-ghost"  onclick="openShareModal()">📸 &nbsp;Share</button>
       <button class="btn btn-danger" onclick="openModal('end-modal')">🏁 &nbsp;End Fast</button>
     </div>`;
 }
@@ -1466,6 +1490,7 @@ function buildFullReport(d){
       <div class="rh-title">Fast Complete!</div>
       <div class="rh-dur">${days>0?days+'d ':''} ${hours}h fasted</div>
       <div class="rh-sub">You did something extraordinary, ${name}.</div>
+      <button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="openShareModal()">📸 &nbsp;Share Infographic</button>
     </div>
     <div class="card fade">
       <div class="card-lbl">Weight &amp; Body Composition</div>
@@ -1652,6 +1677,198 @@ function fmtDate(str,withTime=false) {
 }
 function fmtDur(ms){const s=Math.floor(ms/1000);return{days:Math.floor(s/86400),hours:Math.floor((s%86400)/3600),minutes:Math.floor((s%3600)/60)};}
 function fmtDurStr(ms){const{days,hours,minutes}=fmtDur(ms);let s='';if(days>0)s+=days+'d ';s+=hours+'h '+minutes+'m';return s;}
+
+// ── SHARE / INFOGRAPHIC ────────────────────────────────────────────
+function openShareModal() {
+  const d = doneFast();
+  const state = fastState();
+  if (!d && !state) { toast('⚠️ No fast data yet'); return; }
+  drawInfographic(d || buildActiveFastSnap(state));
+  if (navigator.canShare) document.getElementById('btn-native-share').style.display = '';
+  openModal('share-modal');
+}
+
+function buildActiveFastSnap(state) {
+  const ms = Date.now() - new Date(state.startTime).getTime();
+  const cks = checkins();
+  const lat = cks.length ? cks[cks.length-1] : null;
+  return {
+    durationMs: ms, isActive: true,
+    startWeight: state.startWeight, finalWeight: lat?.weight || state.startWeight,
+    startBodyFat: state.startBodyFat, finalFat: lat?.bodyFat || state.startBodyFat,
+    checkins: cks
+  };
+}
+
+function drawInfographic(d) {
+  const canvas = document.getElementById('share-canvas');
+  const S = 1080;
+  canvas.width = S; canvas.height = S;
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  ctx.fillStyle = '#08080f';
+  ctx.fillRect(0, 0, S, S);
+
+  // Subtle grid pattern
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= S; i += 60) {
+    ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,S); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(S,i); ctx.stroke();
+  }
+
+  // Glow circle behind logo
+  const grd = ctx.createRadialGradient(S/2, 160, 0, S/2, 160, 200);
+  grd.addColorStop(0, 'rgba(0,212,255,0.15)');
+  grd.addColorStop(1, 'rgba(0,212,255,0)');
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, S, 380);
+
+  // Logo
+  ctx.font = 'bold 52px -apple-system,system-ui,sans-serif';
+  ctx.fillStyle = '#00d4ff';
+  ctx.textAlign = 'center';
+  ctx.fillText('⚡ FastTrack', S/2, 100);
+
+  // Duration
+  const {days, hours} = fmtDur(d.durationMs);
+  const durStr = (days > 0 ? days+'d ' : '') + hours + 'h';
+  ctx.font = 'bold 120px -apple-system,system-ui,sans-serif';
+  ctx.fillStyle = '#eeeeff';
+  ctx.fillText(durStr, S/2, 240);
+
+  ctx.font = '28px -apple-system,system-ui,sans-serif';
+  ctx.fillStyle = '#9999bb';
+  ctx.fillText(d.isActive ? 'AND STILL GOING' : 'TOTAL TIME FASTED', S/2, 285);
+
+  // Divider
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(80, 320); ctx.lineTo(S-80, 320); ctx.stroke();
+
+  // Stats row
+  const stats = [
+    { label: 'START', val: d.startWeight.toFixed(1)+' kg', color: '#9999bb' },
+    { label: 'END',   val: d.finalWeight.toFixed(1)+' kg',  color: '#00d4ff' },
+    { label: 'LOST',  val: (Math.max(0,d.startWeight-d.finalWeight)).toFixed(1)+' kg', color: '#00e676' },
+  ];
+  const colW = S / 3;
+  stats.forEach((s, i) => {
+    const cx = colW * i + colW / 2;
+    ctx.font = 'bold 48px -apple-system,system-ui,sans-serif';
+    ctx.fillStyle = s.color;
+    ctx.textAlign = 'center';
+    ctx.fillText(s.val, cx, 400);
+    ctx.font = '22px -apple-system,system-ui,sans-serif';
+    ctx.fillStyle = '#55556a';
+    ctx.fillText(s.label, cx, 430);
+  });
+
+  // Body fat row
+  const bfLost = Math.max(0, d.startBodyFat - d.finalFat).toFixed(1);
+  ctx.font = 'bold 36px -apple-system,system-ui,sans-serif';
+  ctx.fillStyle = '#ff7043';
+  ctx.textAlign = 'center';
+  ctx.fillText(`Body Fat: ${d.startBodyFat}%  →  ${d.finalFat}%  (−${bfLost}%)`, S/2, 495);
+
+  // Divider
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.beginPath(); ctx.moveTo(80, 525); ctx.lineTo(S-80, 525); ctx.stroke();
+
+  // Phases completed
+  const hrsFasted = d.durationMs / 3600000;
+  const completedPhases = PHASES.filter(p => hrsFasted >= p.h0);
+  ctx.font = 'bold 26px -apple-system,system-ui,sans-serif';
+  ctx.fillStyle = '#55556a';
+  ctx.textAlign = 'center';
+  ctx.fillText('PHASES COMPLETED', S/2, 575);
+
+  const phW = (S - 120) / Math.min(completedPhases.length, 6);
+  completedPhases.slice(0, 6).forEach((p, i) => {
+    const cx = 60 + phW * i + phW / 2;
+    // pill background
+    ctx.fillStyle = p.color + '22';
+    roundRect(ctx, cx - phW/2 + 6, 590, phW - 12, 58, 12);
+    ctx.fillStyle = p.color;
+    ctx.font = '30px -apple-system,system-ui,sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(p.icon, cx, 624);
+    ctx.font = 'bold 17px -apple-system,system-ui,sans-serif';
+    ctx.fillText(p.range, cx, 643);
+  });
+
+  // Badges earned
+  const state = fastState();
+  const fastStart = d.isActive ? state?.startTime : ls.get(K.DONE)?.startTime;
+  const fastBadges = fastStart
+    ? BADGES.filter(b => earnedBadges().some(e => e.id === b.id && e.fastStart === fastStart))
+    : BADGES.filter(b => hrsFasted >= b.h);
+
+  if (fastBadges.length) {
+    ctx.font = 'bold 26px -apple-system,system-ui,sans-serif';
+    ctx.fillStyle = '#55556a';
+    ctx.textAlign = 'center';
+    ctx.fillText('BADGES EARNED', S/2, 690);
+    const bW = 100;
+    const totalW = fastBadges.length * bW;
+    const startX = (S - totalW) / 2;
+    fastBadges.forEach((b, i) => {
+      const cx = startX + i * bW + bW / 2;
+      ctx.font = '42px -apple-system,system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(b.icon, cx, 740);
+    });
+  }
+
+  // Bottom branding
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.beginPath(); ctx.moveTo(80, 800); ctx.lineTo(S-80, 800); ctx.stroke();
+
+  const p = getProfile();
+  if (p) {
+    ctx.font = 'bold 30px -apple-system,system-ui,sans-serif';
+    ctx.fillStyle = '#9999bb';
+    ctx.textAlign = 'center';
+    ctx.fillText(p.name + ' · ' + new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}), S/2, 850);
+  }
+  ctx.font = '24px -apple-system,system-ui,sans-serif';
+  ctx.fillStyle = '#2a2a40';
+  ctx.fillText('fasttrack.app', S/2, 900);
+
+  // Update preview
+  const img = document.getElementById('share-preview');
+  img.src = canvas.toDataURL('image/png');
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y); ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w, y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+  ctx.lineTo(x+r, y+h); ctx.arcTo(x,y+h,x,y+h-r,r);
+  ctx.lineTo(x, y+r); ctx.arcTo(x,y,x+r,y,r);
+  ctx.closePath(); ctx.fill();
+}
+
+function downloadInfographic() {
+  const canvas = document.getElementById('share-canvas');
+  const a = document.createElement('a');
+  const p = getProfile();
+  a.download = 'fasttrack-' + (p ? p.name.toLowerCase() : 'fast') + '-' + new Date().toISOString().slice(0,10) + '.png';
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+  toast('📥 Saved!');
+}
+
+async function nativeShare() {
+  const canvas = document.getElementById('share-canvas');
+  try {
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+    const file = new File([blob], 'fasttrack.png', { type: 'image/png' });
+    await navigator.share({ title: 'FastTrack', text: 'My fasting journey', files: [file] });
+  } catch(e) { if (e.name !== 'AbortError') toast('⚠️ Share not supported'); }
+}
 
 // ── GOOGLE FIT ──────────────────────────────────────────────────────
 function getGFitCfg() { return ls.get(K.GFIT,{}); }
