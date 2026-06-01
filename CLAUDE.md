@@ -12,13 +12,13 @@ All data in `localStorage`. Dark mode, mobile-first, Service Worker offline supp
 
 ## File Structure
 ```
-fasttrack.html           ← AKTIVAN (uvijek najnovija verzija, currently v1.6.6)
+fasttrack.html           ← AKTIVAN (uvijek najnovija verzija, currently v2.0.0)
 start-fasttrack.bat      ← lokalni server launcher (http://localhost:8080/fasttrack.html)
 CLAUDE.md                ← this file, always auto-loaded
 CLAUDE_LESSONS_LEARNED.md ← ARCHIVED — do not auto-read, see note inside
 ```
 
-**Naming konvencija (od v1.5.3):** Fiksno ime `fasttrack.html` — git branches i tagovi čuvaju historiju verzija. Ne trebamo versioned fajlove više. `fasttrack-v*.html` fajlovi su legacy, možemo ih brisati.
+**Naming konvencija (od v1.5.3):** Fiksno ime `fasttrack.html` — git branches i tagovi čuvaju historiju verzija. Ne trebamo versioned fajlove više.
 
 **Ne čitaj stare verzije** osim ako eksplicitno uspoređuješ. Koristi `grep` umjesto čitanja cijelog fajla.
 
@@ -30,13 +30,16 @@ CLAUDE_LESSONS_LEARNED.md ← ARCHIVED — do not auto-read, see note inside
 |-----|---------|
 | `ft_profile` | `{ name, age, gender, height }` |
 | `ft_state` | `{ startTime, startWeight, startBodyFat }` — null kad nije aktivan post |
-| `ft_checkins` | `[{ datetime, weight, bodyFat, id }, ...]` |
-| `ft_done` | Completed fast data + checkins snapshot |
+| `ft_checkins` | `[{ datetime, weight, bodyFat, id, wb:{energy,hunger,clarity} }, ...]` |
+| `ft_done` | Last completed fast (backward compat) |
+| `ft_history` | `[{ id, startTime, endTime, durationMs, startWeight, startBodyFat, finalWeight, finalFat, checkins }, ...]` — SVE završene sesije |
 | `ft_quote` | `{ text, author, ts }` — online quote, cache 6h |
 | `ft_notif` | `{ enabled, checkinHour, milestones }` — notification settings |
-| `ft_lphase` | `number` — last notified phase ID (za milestone detection) |
-| `ft_badges` | `[{ id, earnedAt, fastStart }]` — lifetime, čuva sve fastove |
+| `ft_lphase` | `number` — last notified phase ID |
+| `ft_badges` | `[{ id, earnedAt, fastStart }]` — lifetime, čuva sve sesije |
 | `ft_lbadge` | `number` — last checked hrs (za badge debounce) |
+
+**Migracija:** `init()` automatski migrira stari `ft_done` u `ft_history[0]` (one-time, v2.0+).
 
 ---
 
@@ -55,7 +58,7 @@ CLAUDE_LESSONS_LEARNED.md ← ARCHIVED — do not auto-read, see note inside
 ## Working Rules
 
 ### 1. Pisanje/editiranje fajlova
-- **Write tool (novi fajl):** ✅ radi
+- **Write tool (novi fajl / CLAUDE.md):** ✅ radi
 - **Edit tool (izmjena postojećeg, > ~500 linija):** ⚠️ rizik od tihog truncationa
 - **Sigurno rješenje za edit velikih HTML fajlova:** piši Python skript u bash:
   ```python
@@ -69,14 +72,12 @@ CLAUDE_LESSONS_LEARNED.md ← ARCHIVED — do not auto-read, see note inside
   print("Done:", len(content.splitlines()), "lines")
   ```
 - Nakon bilo kojeg edita: `tail -5 fajl` da provjeriš kraj
-- **CLAUDE.md editovanje:** koristiti Write tool (ne Edit, ne Python replace) — kraći fajl, Write je siguran
+- JS syntax check: `python3 -c "import re; ..."` da izvučeš `<script>` blok, zatim `node --check /tmp/ft_check.js`
 
 ### 2. Git — uvijek PowerShell, nikad bash sandbox
 ```powershell
 # Bash sandbox ima permission greške na .git/config — potvrđeno!
-# Svi git komandi idu kroz mcp__Windows-MCP__PowerShell:
 Set-Location "C:\Users\silvi\Desktop\Post\Post"
-git checkout -b vX.Y-opis
 git add .; git commit -m "vX.Y.Z — opis"
 git push origin v1.5-wellbeing-journal
 ```
@@ -86,11 +87,9 @@ git push origin v1.5-wellbeing-journal
 - Commit: `vX.Y.Z — opis promjena`
 
 ### 4. Service Worker cache
-Kad mijenjamo CSS ili JS unutar HTML fajla, bumpa string u SW kodu:
 ```js
-const C = 'ft-v1.1'; // ← bumpa na ft-v1.2, ft-v1.3, itd.
+const C = 'ft-v2.0'; // bumpa pri svakoj CSS/JS promjeni
 ```
-Bez bumpa browser servira stari cached CSS.
 
 ### 5. Zapisuj odmah
 Svaki arhitekturalni nalaz, bug, ili odluka — piši u CLAUDE.md odmah.
@@ -104,7 +103,7 @@ Token limit prekida razgovor bez upozorenja. Sljedeća sesija ne zna ništa.
 **Live:** `https://silviogajdosik-ops.github.io/fasttrack/fasttrack.html`
 **Lokalni server:** `start-fasttrack.bat` → `http://localhost:8080/fasttrack.html`
 **Aktivna grana:** `v1.5-wellbeing-journal`
-**Zadnji commit:** `v1.6.6 — fix profile modal infinite recursion (name btn + Edit btn)`
+**Zadnji commit:** `v2.0.0 — Multi-fast history: ft_history array, stats, trend chart, comparison table, fast list`
 
 ---
 
@@ -123,11 +122,12 @@ Token limit prekida razgovor bez upozorenja. Sljedeća sesija ne zna ništa.
 | v1.5.3 | Rename na `fasttrack.html` (fiksno ime) |
 | v1.6.0 | Shareable infographic — Canvas 1080×1080 PNG, Download + Web Share API |
 | v1.6.1 | Version broj u headeru + Data tabu; nav overlap fix (margin-bottom 80px) |
-| v1.6.2 | GFit: fleksibilan import (weight bez fat), ±1h dedup, conflict resolution modal, dijagnostički toast |
-| v1.6.3 | Check-in CRUD: ✏️ edit, 🗑️ delete, ＋ Add Entry; GFit 🔍 debug modal (stvarni dataSourceId-evi) |
-| v1.6.4 | GFit: UTC→local datum fix (getDate() umjesto toISOString()) |
-| v1.6.5 | GFit: stvarni timestamp mjerenja iz `pt.startTimeNanos` umjesto bucket ponoći |
-| v1.6.6 | Fix: `openProfileModal()` pozivao `openModal()` rekurzivno → stack overflow → 👤 name btn i ✏️ Edit btn nisu radili |
+| v1.6.2 | GFit: fleksibilan import, ±1h dedup, conflict resolution modal |
+| v1.6.3 | Check-in CRUD: ✏️ edit, 🗑️ delete, ＋ Add Entry; GFit 🔍 debug modal |
+| v1.6.4 | GFit: UTC→local datum fix |
+| v1.6.5 | GFit: stvarni timestamp iz `pt.startTimeNanos` |
+| v1.6.6 | Fix: `openProfileModal()` rekurzija → stack overflow → name btn i Edit btn nisu radili |
+| v2.0.0 | Multi-fast history: `ft_history` array, all-time stats, trend chart, comparison table, fast list cards; ft_done→ft_history migracija; SW bump ft-v2.0 |
 
 ---
 
@@ -140,10 +140,17 @@ Token limit prekida razgovor bez upozorenja. Sljedeća sesija ne zna ništa.
 - GitHub Pages: svaki `git push` origin deploya automatski (~1 min)
 
 ### Badge arhitektura
-- `ft_badges` — array `{ id, earnedAt, fastStart }` — lifetime, čuva sve fastove
-- `ft_lbadge` — last checked hrs (za debounce)
+- `ft_badges` — array `{ id, earnedAt, fastStart }` — lifetime
 - `thisFastBadgeIds()` — Set ID-eva zarađenih u tekućem fastu
-- Badge rack pokazuje: earned this fast (boja) + next badge (dashed, countdown)
+- Badge rack: earned this fast (boja) + next badge (dashed, countdown)
+
+### ft_history arhitektura (v2.0)
+- Svaka završena sesija pushuje se u array (stari `ft_done` ostaje za backward compat)
+- `buildHistorySection()` — container za sve history UI komponente
+- `buildHistoryStats()` — all-time stats card
+- `buildTrendChart()` — SVG trend chart finalnih težina kroz sesije (ljubičasta linija)
+- `buildComparisonTable()` — tabela duration/wt lost/fat lost po sesiji
+- `buildFastList()` — cards za svaku sesiju, sortirano po newest first
 
 ---
 
@@ -151,7 +158,8 @@ Token limit prekida razgovor bez upozorenja. Sljedeća sesija ne zna ništa.
 
 | Prioritet | Verzija | Feature |
 |-----------|---------|---------|
-| 🥇 | v2.0 | Multi-fast history, trend analiza kroz tjedne/mjesece |
+| 🥇 | v2.1 | Wellbeing trend kroz sesije (energy/hunger/clarity grafovi) |
+| 🥈 | v2.2 | Streak / consistency badges (X fasts u Y tjedana) |
 
 ---
 
@@ -162,3 +170,4 @@ Token limit prekida razgovor bez upozorenja. Sljedeća sesija ne zna ništa.
 3. Git greška → koristiti PowerShell, ne bash sandbox
 4. LocalStorage problem → DevTools → Application → Local Storage → check keys
 5. Modal se ne otvara → provjeri rekurziju u `openModal` / `open*Modal` funkcijama
+6. History se ne prikazuje → provjeri `ft_history` u localStorage; migracija radi samo pri prvom loadu
