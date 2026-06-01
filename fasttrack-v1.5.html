@@ -1677,7 +1677,7 @@ function connectGoogleFit() {
       callback: async resp => {
         if(resp.error){ toast('❌ '+resp.error); return; }
         saveGFitCfg({...cfg, token:resp.access_token, expiresAt:Date.now()+(resp.expires_in||3600)*1000});
-        toast('✅ Connected to Google Fit!'); renderData();
+        toast('✅ Connected to Google Fit!'); renderData(); renderGFitSection();
         await syncGoogleFitData();
       }
     }).requestAccessToken();
@@ -1691,7 +1691,10 @@ function disconnectGoogleFit() {
 
 async function syncGoogleFitData() {
   const cfg=getGFitCfg();
-  if(!cfg.token){ toast('⚠️ Not connected'); return; }
+  if(!isGFitConnected()) {
+    if(cfg.clientId) { toast('🔑 Token expired — re-authenticating…'); connectGoogleFit(); return; }
+    toast('⚠️ Not connected — save your Client ID first'); return;
+  }
   toast('🔄 Syncing...');
   const now=Date.now();
   const body={
@@ -1800,6 +1803,8 @@ function renderGFitSection() {
       <span class="ival" style="color:${connected?'var(--grn)':'var(--text3)'}">${connected?'🟢 Connected':'⚪ Not connected'}</span></div>
     <div class="info-row"><span class="ilab">Client ID</span>
       <span style="font-size:.72rem;color:var(--text3)">${cfg.clientId.slice(0,28)}…</span></div>
+    ${connected && cfg.expiresAt ? `<div class="info-row"><span class="ilab">Token expires</span>
+      <span style="font-size:.72rem;color:var(--text3)">${new Date(cfg.expiresAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} (${Math.max(0,Math.round((cfg.expiresAt-Date.now())/60000))} min)</span></div>` : ''}
     <div style="display:flex;gap:7px;margin-top:12px;">
       ${connected
         ?`<button class="btn btn-primary btn-sm" style="flex:2" onclick="syncGoogleFitData()">🔄 Sync (last 30d)</button>
