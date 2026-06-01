@@ -996,7 +996,7 @@ function buildBadgeGrid() {
 }
 
 // ── STORAGE ────────────────────────────────────────────────────────
-const APP_VERSION = 'v1.6.3';
+const APP_VERSION = 'v1.6.4';
 const K = { PROF:'ft_profile', STATE:'ft_state', CHKINS:'ft_checkins', DONE:'ft_done', QUOTE:'ft_quote', NOTIF:'ft_notif', LPHASE:'ft_lphase', GFIT:'ft_gfit', BADGES:'ft_badges', LBADGE:'ft_lbadge' };
 const ls = {
   get:(k,d=null)=>{ try{return JSON.parse(localStorage.getItem(k))??d}catch{return d} },
@@ -1057,7 +1057,7 @@ function init() {
 
 function registerSW() {
   if (!('serviceWorker' in navigator)) return;
-  const c = `const C='ft-v1.6.3';
+  const c = `const C='ft-v1.6.4';
     self.addEventListener('install',e=>{ e.waitUntil(Promise.resolve()); self.skipWaiting(); });
     self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));
     self.addEventListener('message',e=>{
@@ -2092,7 +2092,8 @@ function importGFitBuckets(buckets) {
   for (const b of buckets) {
     let wt = null, fat = null;
     const d = new Date(parseInt(b.startTimeMillis));
-    const ds = d.toISOString().slice(0, 10);
+    // Local date — toISOString() gives UTC which is wrong for UTC+ timezones
+    const ds = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
     const bucketTs = new Date(ds + 'T08:00').getTime();
 
     for (const set of (b.dataset || [])) {
@@ -2126,7 +2127,7 @@ function importGFitBuckets(buckets) {
   }
 
   if (seenTypes.size === 0) toast('⚠️ Fit returned 0 data points. Check Zepp Life → Google Fit sync.');
-  else if (!seenTypes.has('body.fat')) toast('\u2139\ufe0f Weight data found, no body fat. ' + n + ' entries imported.');
+  else if (!seenTypes.has('body.fat')) toast('\u2139\ufe0f Weight imported (' + n + ' entries). Zepp Life does not sync body fat to Google Fit \u2014 add it manually via \u270f\ufe0f.');
 
   if (conflicts.length) showGFitConflicts(conflicts);
   return n;
