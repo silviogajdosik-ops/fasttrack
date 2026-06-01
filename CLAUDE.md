@@ -116,6 +116,18 @@ Token limit prekida razgovor bez upozorenja. Sljedeća sesija ne zna ništa.
 - Ako token istekne → auto re-auth (`connectGoogleFit()`) umjesto samo poruke o grešci
 - UI prikazuje kada token ističe (HH:MM, X min remaining) dok je konektovan
 
+### Serija fixeva v1.6.x (post-deploy)
+- v1.6.1 — Version broj u headeru + Data tabu; nav overlap fix (margin-bottom 80px)
+- v1.6.2 — GFit: fleksibilan import (weight bez fat), ±1h dedup, conflict resolution UI, dijagnostički toast
+- v1.6.3 — Check-in CRUD: ✏️ edit, 🗑️ delete, ＋ Add Entry; GFit 🔍 debug (pokazuje stvarne dataSourceId-eve)
+- v1.6.4 — GFit: UTC→local datum fix (getDate() umjesto toISOString())
+- v1.6.5 — GFit: koristi stvarni timestamp mjerenja (pt.startTimeNanos) umjesto bucket ponoći ✅
+
+### Napomena o Google Fit / Zepp Life (potvrđeno)
+- Zepp Life **ne šalje body fat** prema Google Fit API-ju — samo tjelesna težina
+- Body fat se mora unositi ručno (✏️ edit) ili kroz Zepp Life CSV export
+- Aktivni GitHub Pages: https://silviogajdosik-ops.github.io/fasttrack/fasttrack.html
+
 ### Arhitektura badgea (v1.4)
 - `ft_badges` — array `{ id, earnedAt, fastStart }` — lifetime, čuva sve fastove
 - `ft_lbadge` — last checked hrs (za debounce)
