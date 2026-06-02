@@ -498,6 +498,18 @@ input[type=datetime-local]::-webkit-calendar-picker-indicator { filter:invert(.5
 .tl-collapsible summary::-webkit-details-marker { display:none; }
 .tl-collapsible .tl-wrap { margin-top:14px; }
 
+.struggling-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:14px; }
+.sg-btn { background:var(--surf2); border:1px solid var(--border); border-radius:10px;
+  padding:12px 6px; font-size:.76rem; line-height:1.4; color:var(--text1); cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:5px;
+  transition:background .15s,border-color .15s; }
+.sg-btn:active,.sg-btn:hover { background:rgba(255,71,87,.12); border-color:var(--red); color:var(--red); }
+.sg-time { font-size:.84rem; color:var(--text2); margin-bottom:12px; text-align:center; padding:10px;
+  background:var(--surf2); border-radius:8px; border-left:3px solid var(--cyan); }
+.sg-msg { font-size:.9rem; color:var(--text1); line-height:1.65; margin-bottom:12px; }
+.sg-sci { font-size:.74rem; color:var(--text3); line-height:1.55; padding:10px 12px;
+  background:var(--surf2); border-radius:8px; }
+
 @keyframes badge-pop {
   0%   { transform:scale(.7); opacity:.3; }
   60%  { transform:scale(1.08); }
@@ -831,10 +843,26 @@ input[type=datetime-local]::-webkit-calendar-picker-indicator { filter:invert(.5
 <!-- End Fast -->
 <div class="overlay" id="struggling-modal">
   <div class="modal">
-    <div class="modal-title" style="color:var(--red)">⚠️ I'm Struggling</div>
-    <p style="color:var(--text2);font-size:.85rem;margin-bottom:16px">Full support coming in next update. You've got this — every hour counts.</p>
-    <p style="color:var(--cyan);font-size:.82rem;margin-bottom:20px">💧 Try: drink 500ml water, walk 10 minutes, then reassess.</p>
-    <button class="btn btn-ghost" onclick="closeModal('struggling-modal')">Close</button>
+    <div id="struggling-step1">
+      <div class="modal-title" style="color:var(--red)">⚠️ What's hardest right now?</div>
+      <p style="color:var(--text3);font-size:.78rem;margin:4px 0 0">Tap the category that fits best.</p>
+      <div class="struggling-grid">
+        <button class="sg-btn" onclick="selectStrugglingCat('hunger')">🍽️<br>Hunger</button>
+        <button class="sg-btn" onclick="selectStrugglingCat('cravings')">🧠<br>Cravings</button>
+        <button class="sg-btn" onclick="selectStrugglingCat('energy')">⚡<br>Low Energy</button>
+        <button class="sg-btn" onclick="selectStrugglingCat('boredom')">😐<br>Boredom</button>
+        <button class="sg-btn" onclick="selectStrugglingCat('social')">👥<br>Social</button>
+        <button class="sg-btn" onclick="selectStrugglingCat('quit')">🔥<br>Want to Quit</button>
+      </div>
+      <button class="btn btn-ghost" style="margin-top:14px;width:100%" onclick="closeModal('struggling-modal')">I'm fine now</button>
+    </div>
+    <div id="struggling-step2" style="display:none">
+      <div class="sg-time" id="sg-time"></div>
+      <p class="sg-msg" id="sg-msg"></p>
+      <div class="sg-sci" id="sg-sci"></div>
+      <button class="btn btn-ghost"    style="margin-top:14px;width:100%" onclick="backToStrugglingStep1()">← Different issue</button>
+      <button class="btn btn-primary"  style="margin-top:8px;width:100%"  onclick="closeModal('struggling-modal')">💪 I've got this</button>
+    </div>
   </div>
 </div>
 <div class="overlay" id="end-modal">
@@ -970,6 +998,70 @@ const PHASES = [
       sci:'📚 BDNF elevation promotes neurogenesis and synaptic plasticity. SIRT1/SIRT3 highly active → mitochondrial biogenesis, telomere protection. Stem cell mobilization continuing across multiple tissue types.'}}
 ];
 
+// ── STRUGGLING MODE ────────────────────────────────────────────────
+const STRUGGLING = {
+  hunger:{label:'🍽️ Hunger',msgs:[
+    {msg:"Most hunger waves last 15–20 minutes and pass on their own. Drink 500ml of water, walk for 10 minutes, then reassess. The wave will have passed.",
+     sci:"🔬 Ghrelin (hunger hormone) pulses every 90–120 min and subsides without food. Water activates stomach mechanoreceptors, blunting the signal."},
+    {msg:"That hunger feeling is your body realising it needs to switch fuel sources — not a signal that you are in danger. You have weeks of stored energy available.",
+     sci:"🔬 Average body stores 40,000–100,000+ kcal as fat. The discomfort is hormonal transition, not a caloric deficit crisis."},
+    {msg:"Add electrolytes. Seriously. A pinch of salt or electrolyte mix resolves a large percentage of fasting discomfort. Hunger and electrolyte depletion feel identical.",
+     sci:"🔬 Sodium depletion during fasting mimics hunger signals. Electrolytes resolve most perceived 'hunger' within 15–20 minutes."},
+    {msg:"Hunger during fasting is mostly learned pattern recognition — your body is used to eating at certain times. This is that pattern asking to be fed. It passes if you let it.",
+     sci:"🔬 Conditioned meal-time hunger: ghrelin peaks at habitual eating times, then subsides within 30–60 min without food. It is a clock response, not a deficit response."}
+  ]},
+  cravings:{label:'🧠 Cravings',msgs:[
+    {msg:"Cravings peak and pass. Your brain is running on ketones now — that craving is neurological noise from dopamine pathways, not a real metabolic need.",
+     sci:"🔬 Food cravings originate in reward circuits (nucleus accumbens), not hunger centres. Peak craving intensity averages 3–5 minutes."},
+    {msg:"Name the specific food you're craving. Then wait 5 minutes. The craving is a memory pattern, not a biological need. Your body does not require that food right now.",
+     sci:"🔬 Mindful delay (5–10 min) significantly reduces craving intensity. Prefrontal engagement with the craving weakens its salience."},
+    {msg:"Go do something physical with your hands for 20 minutes — make, fix, or clean something. Cravings cannot compete with genuine engagement.",
+     sci:"🔬 Motor activity redirects dopamine circuits away from food anticipation. Physical tasks reduce craving intensity by ~40% in studies."},
+    {msg:"This craving is your brain predicting your next move based on past patterns. You're interrupting the pattern. The discomfort you feel is the pattern breaking.",
+     sci:"🔬 Habit loops: cue → routine → reward. Fasting interrupts the routine. The craving signal weakens with each non-response over time."}
+  ]},
+  energy:{label:'⚡ Low Energy',msgs:[
+    {msg:"Hours 20–36 are the energy valley. ATP production is shifting from glucose to ketone-based metabolism. This dip is temporary — and it is followed by noticeable clarity.",
+     sci:"🔬 Metabolic transition dip: hepatic glucose output drops before ketone availability peaks. Duration: 4–12h typically. Mitochondrial adaptation ongoing."},
+    {msg:"Lie down for 20 minutes — not to sleep, just to rest with your eyes closed. Your body is burning resources on metabolic reconfiguration. Give it stillness.",
+     sci:"🔬 Non-sleep rest (NSDR) reduces cortisol and allows metabolic processes to run more efficiently. 20 min rest equals significant cellular recovery time."},
+    {msg:"This low energy is not weakness. It is your liver mid-construction of an entirely new fuel delivery system. You are not getting worse — you are being upgraded.",
+     sci:"🔬 Hepatic ketogenesis requires enzyme upregulation, mitochondrial biogenesis, and fatty acid transport adjustment. Transient fatigue is expected and normal."},
+    {msg:"Try a slow 15-minute walk. Light movement at this intensity actively accelerates fatty acid mobilisation — and within 30 minutes, most people feel a real energy lift.",
+     sci:"🔬 Low-intensity exercise (≤50% VO2max) during fasting enhances free fatty acid mobilisation and ketone production without depleting remaining glycogen."}
+  ]},
+  boredom:{label:'😐 Boredom',msgs:[
+    {msg:"You are not hungry. You are bored — and your brain has learned that boredom equals eating. These are not the same thing, and distinguishing them is valuable.",
+     sci:"🔬 Boredom eating is driven by dopamine-seeking, not energy deficit. The orbitofrontal cortex conflates under-stimulation with reward-seeking behaviour."},
+    {msg:"Go do something with your hands for 20 minutes. Make, fix, or clean something. Boredom cannot survive genuine physical engagement.",
+     sci:"🔬 Occupying the motor cortex with task-focused work suppresses the default mode network — where boredom and food thoughts originate."},
+    {msg:"Drink sparkling water or tea, change your physical location, and set a 20-minute timer. If you still feel a real need after that, reassess. Most people don't.",
+     sci:"🔬 Environmental cues drive 65%+ of non-hungry eating. Changing location removes visual triggers. Time delay confirms whether this is hormonal or behavioural."},
+    {msg:"Notice what this moment is telling you: eating has been filling time, not just fuelling your body. That insight alone is worth something — it changes how you'll eat later.",
+     sci:"🔬 30–40% of eating occasions in developed countries are driven by non-hunger cues. Recognising this pattern is the first step to changing it."}
+  ]},
+  social:{label:'👥 Social Pressure',msgs:[
+    {msg:"Food is social currency — you can decline it gracefully. 'I'm not hungry right now' is complete, polite, and entirely true. You do not owe anyone a longer explanation.",
+     sci:"🔬 Social facilitation of eating: people eat 35–96% more in groups. The pressure you feel is social norm enforcement, not genuine concern for your health."},
+    {msg:"If someone pushes back: 'I'm doing intermittent fasting, I'll eat later.' This closes the topic, is widely understood, and has the advantage of being true.",
+     sci:"🔬 Intermittent fasting is mainstream enough that social resistance has dropped significantly. One clear sentence is almost always sufficient."},
+    {msg:"The discomfort you feel is other people being uncomfortable. Their discomfort is real — but it is not your responsibility to resolve it by eating.",
+     sci:"🔬 Social conformity pressure (Asch-type): recognising that the pressure is social, not medical, is the primary tool for resisting it without conflict."},
+    {msg:"You can sit at a table, drink water or coffee, and participate fully in a meal without eating. Billions of people with dietary restrictions do exactly this daily.",
+     sci:"🔬 Presence, not consumption, is the actual social requirement. Studies on religious fasters show full social integration maintained without eating."}
+  ]},
+  quit:{label:'🔥 Want to Quit',msgs:[
+    {msg:"The version of you who started this fast knew something. That version was right. Nothing has actually changed since then — except that you have more hours behind you.",
+     sci:"🔬 'Want to quit' impulse peaks at biological stress points (glucose transition, cortisol spikes) and typically passes within 20–30 min without action."},
+    {msg:"Write down three reasons you started. Not reasons to continue — reasons you chose to begin. Those reasons have not changed. They are still true right now.",
+     sci:"🔬 Value reconnection is one of the highest-efficacy strategies for impulse override. Reconnecting with original intent reduces quit rates significantly."},
+    {msg:"You are not at the end of your strength — you are at the part where it feels like the end. Every person who has done this has been exactly where you are right now.",
+     sci:"🔬 Perceived exertion vs. actual capacity: peak 'want to quit' typically occurs at 60–80% of actual capacity, not near the real limit."},
+    {msg:"End the fast if you need to — but wait 30 minutes first. Set a timer. Do not decide right now. The version of you in 30 minutes will have better information.",
+     sci:"🔬 Temporal self-discounting: decisions made under acute discomfort over-weight immediate relief. A 20–30 min delay corrects for this bias reliably."}
+  ]}
+};
+
 // ── BADGES ────────────────────────────────────────────────────────
 const BADGES = [
   { id:'12h',  h:12,  icon:'⚡', name:'Ketosis Spark',     color:'#00d4ff', desc:'12 hours — the metabolic switch begins' },
@@ -1064,7 +1156,7 @@ function buildBadgeGrid() {
 
 // ── STORAGE ────────────────────────────────────────────────────────
 const APP_VERSION = 'v2.1.0-ft2';
-const K = { PROF:'ft_profile', STATE:'ft_state', CHKINS:'ft_checkins', DONE:'ft_done', HISTORY:'ft_history', QUOTE:'ft_quote', NOTIF:'ft_notif', LPHASE:'ft_lphase', GFIT:'ft_gfit', BADGES:'ft_badges', LBADGE:'ft_lbadge' };
+const K = { PROF:'ft_profile', STATE:'ft_state', CHKINS:'ft_checkins', DONE:'ft_done', HISTORY:'ft_history', QUOTE:'ft_quote', NOTIF:'ft_notif', LPHASE:'ft_lphase', GFIT:'ft_gfit', BADGES:'ft_badges', LBADGE:'ft_lbadge', STRUGGLES:'ft_struggles' };
 const ls = {
   get:(k,d=null)=>{ try{return JSON.parse(localStorage.getItem(k))??d}catch{return d} },
   set:(k,v)=>localStorage.setItem(k,JSON.stringify(v)),
@@ -1461,8 +1553,37 @@ function buildRecentCheckin() {
 }
 
 function openStrugglingModal() {
-  // Full implementation in Feature 2 — Struggling Mode
+  const s1=document.getElementById('struggling-step1');
+  const s2=document.getElementById('struggling-step2');
+  if(s1) s1.style.display='';
+  if(s2) s2.style.display='none';
+  const struggles = ls.get(K.STRUGGLES,[]);
+  struggles.push({ts:Date.now(),category:null});
+  ls.set(K.STRUGGLES,struggles);
   openModal('struggling-modal');
+}
+
+function selectStrugglingCat(cat) {
+  const data=STRUGGLING[cat]; if(!data) return;
+  const item=data.msgs[Math.floor(Math.random()*data.msgs.length)];
+  const state=fastState();
+  const hrs=state?(Date.now()-new Date(state.startTime).getTime())/3600000:0;
+  const d=Math.floor(hrs/24), h=Math.floor(hrs%24);
+  const ts=d>0?`${d}d ${h}h`:`${Math.floor(hrs)}h`;
+  const timeEl=document.getElementById('sg-time');
+  if(timeEl) timeEl.innerHTML=`You have already made it <strong style="color:var(--cyan)">${ts}</strong>. That is real progress.`;
+  const msgEl=document.getElementById('sg-msg'); if(msgEl) msgEl.textContent=item.msg;
+  const sciEl=document.getElementById('sg-sci'); if(sciEl) sciEl.textContent=item.sci;
+  document.getElementById('struggling-step1').style.display='none';
+  document.getElementById('struggling-step2').style.display='';
+  const struggles=ls.get(K.STRUGGLES,[]);
+  if(struggles.length) struggles[struggles.length-1].category=cat;
+  ls.set(K.STRUGGLES,struggles);
+}
+
+function backToStrugglingStep1() {
+  document.getElementById('struggling-step1').style.display='';
+  document.getElementById('struggling-step2').style.display='none';
 }
 
 // ── TIMER ──────────────────────────────────────────────────────────
