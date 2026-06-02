@@ -12,10 +12,12 @@ All data in `localStorage`. Dark mode, mobile-first, Service Worker offline supp
 
 ## File Structure
 ```
-fasttrack.html           ← AKTIVAN (uvijek najnovija verzija, currently v2.0.0)
+fasttrack.html           ← STARA APP — v1.9.0, završena, NE DIRAJ
+fasttrack2.html          ← NOVA APP — v2-fasttrack2 branch, aktivni razvoj
 start-fasttrack.bat      ← lokalni server launcher (http://localhost:8080/fasttrack.html)
+FASTTRACK2_PLAN.md       ← 10 featura za fasttrack2, uvijek čitaj na startu sesije
 CLAUDE.md                ← this file, always auto-loaded
-CLAUDE_LESSONS_LEARNED.md ← ARCHIVED — do not auto-read, see note inside
+CLAUDE_LESSONS_LEARNED.md ← ARCHIVED — do not auto-read
 ```
 
 **Naming konvencija (od v1.5.3):** Fiksno ime `fasttrack.html` — git branches i tagovi čuvaju historiju verzija. Ne trebamo versioned fajlove više.
@@ -100,10 +102,19 @@ Token limit prekida razgovor bez upozorenja. Sljedeća sesija ne zna ništa.
 ## Current State
 
 **Repo:** `https://github.com/silviogajdosik-ops/fasttrack.git`
-**Live:** `https://silviogajdosik-ops.github.io/fasttrack/fasttrack.html`
+**Live (stara):** `https://silviogajdosik-ops.github.io/fasttrack/fasttrack.html`
+**Live (nova):** `https://silviogajdosik-ops.github.io/fasttrack/fasttrack2.html`
 **Lokalni server:** `start-fasttrack.bat` → `http://localhost:8080/fasttrack.html`
-**Aktivna grana:** `v1.5-wellbeing-journal`
-**Zadnji commit:** `v2.0.0 — Multi-fast history: ft_history array, stats, trend chart, comparison table, fast list`
+
+### fasttrack.html (stara app)
+**Grana:** `v1.5-wellbeing-journal` (finished, do not touch)
+**Zadnji commit:** `v2.0.0 — Multi-fast history`
+
+### fasttrack2.html (aktivna app)
+**Grana:** `v2-fasttrack2`
+**Zadnji commit:** `v2.4.0-ft2 — Feature 3: Fast Journal`
+**SW cache:** `ft2-v2.1`
+**APP_VERSION:** `v2.1.0-ft2`
 
 ---
 
@@ -120,54 +131,32 @@ Token limit prekida razgovor bez upozorenja. Sljedeća sesija ne zna ništa.
 | v1.5.1 | GFit token auto re-auth (isGFitConnected + expiry check) |
 | v1.5.2 | Fix JS syntax bug (apostrophe u motivational strings) |
 | v1.5.3 | Rename na `fasttrack.html` (fiksno ime) |
-| v1.6.0 | Shareable infographic — Canvas 1080×1080 PNG, Download + Web Share API |
-| v1.6.1 | Version broj u headeru + Data tabu; nav overlap fix (margin-bottom 80px) |
-| v1.6.2 | GFit: fleksibilan import, ±1h dedup, conflict resolution modal |
-| v1.6.3 | Check-in CRUD: ✏️ edit, 🗑️ delete, ＋ Add Entry; GFit 🔍 debug modal |
-| v1.6.4 | GFit: UTC→local datum fix |
-| v1.6.5 | GFit: stvarni timestamp iz `pt.startTimeNanos` |
-| v1.6.6 | Fix: `openProfileModal()` rekurzija → stack overflow → name btn i Edit btn nisu radili |
-| v2.0.0 | Multi-fast history: `ft_history` array, all-time stats, trend chart, comparison table, fast list cards; ft_done→ft_history migracija; SW bump ft-v2.0 |
+| v1.6.0 | Shareable infographic — Ca
+| v1.6.0 | Shareable infographic — Canvas 1080×1080 PNG |
+| v1.6.1–1.6.6 | GFit fixes, check-in CRUD, modal rekurzija fix |
+| v2.0.0 | Multi-fast history: ft_history array, stats, trend chart |
+| v2.1.0-ft2 | fasttrack2: Feature 7 Homepage redesign |
+| v2.2.0-ft2 | fasttrack2: Feature 8 Phase cards (bullets) |
+| v2.3.0-ft2 | fasttrack2: Feature 2 Struggling Mode |
+| v2.4.0-ft2 | fasttrack2: Feature 3 Fast Journal |
 
 ---
 
-## Napomene o integracijama
+## fasttrack2 — Next Up
 
-### Google Fit / Zepp Life (potvrđeno)
-- Zepp Life **ne šalje body fat** prema Google Fit API-ju — samo tjelesna težina
-- Body fat se mora unositi ručno (✏️ edit) ili kroz Zepp Life CSV export
-- Google OAuth: Authorized JS origins mora sadržavati `https://silviogajdosik-ops.github.io`
-- GitHub Pages: svaki `git push` origin deploya automatski (~1 min)
-
-### Badge arhitektura
-- `ft_badges` — array `{ id, earnedAt, fastStart }` — lifetime
-- `thisFastBadgeIds()` — Set ID-eva zarađenih u tekućem fastu
-- Badge rack: earned this fast (boja) + next badge (dashed, countdown)
-
-### ft_history arhitektura (v2.0)
-- Svaka završena sesija pushuje se u array (stari `ft_done` ostaje za backward compat)
-- `buildHistorySection()` — container za sve history UI komponente
-- `buildHistoryStats()` — all-time stats card
-- `buildTrendChart()` — SVG trend chart finalnih težina kroz sesije (ljubičasta linija)
-- `buildComparisonTable()` — tabela duration/wt lost/fat lost po sesiji
-- `buildFastList()` — cards za svaku sesiju, sortirano po newest first
-
----
-
-## Next Up
-
-| Prioritet | Verzija | Feature |
-|-----------|---------|---------|
-| 🥇 | v2.1 | Wellbeing trend kroz sesije (energy/hunger/clarity grafovi) |
-| 🥈 | v2.2 | Streak / consistency badges (X fasts u Y tjedana) |
-
----
+| Status | Feature |
+|--------|---------|
+| ✅ done | F7 Homepage redesign, F8 Phase cards, F2 Struggling Mode, F3 Journal |
+| 🔲 next | Feature 5 — Advanced lifetime badges (LIFETIME_BADGES separate array) |
+| 🔲 | Feature 9 — Insights sparklines (SVG, wellbeing trends) |
+| 🔲 | Feature 4 — Personal records card |
+| 🔲 | Feature 6 — History dashboard improvements |
+| 🔲 last | Feature 10 — Code organization (section comments) |
 
 ## Brzi debugging checklist
 
-1. App se ne učitava nakon edita → `tail -20 fasttrack.html` (truncation?)
-2. CSS promjena nema efekta → bump SW cache string (`const C = 'ft-vX.X'`)
+1. App se ne učitava → `tail -20 fasttrack2.html` (truncation?)
+2. CSS nema efekta → bump SW cache `const C='ft2-vX.X'`
 3. Git greška → koristiti PowerShell, ne bash sandbox
-4. LocalStorage problem → DevTools → Application → Local Storage → check keys
-5. Modal se ne otvara → provjeri rekurziju u `openModal` / `open*Modal` funkcijama
-6. History se ne prikazuje → provjeri `ft_history` u localStorage; migracija radi samo pri prvom loadu
+4. JS error → `node --check /tmp/ft2_check.js`
+5. Modal se ne otvara → provjeri rekurziju u `openModal`/`open*Modal`
