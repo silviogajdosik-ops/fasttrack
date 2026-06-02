@@ -510,6 +510,28 @@ input[type=datetime-local]::-webkit-calendar-picker-indicator { filter:invert(.5
 .sg-sci { font-size:.74rem; color:var(--text3); line-height:1.55; padding:10px 12px;
   background:var(--surf2); border-radius:8px; }
 
+.journal-wrap { margin-top:16px; border-top:1px solid var(--border); padding-top:16px; }
+.journal-day-badge { display:inline-block; background:var(--surf2); border-radius:20px;
+  padding:3px 14px; font-size:.72rem; color:var(--cyan); margin-bottom:12px; font-weight:600; }
+.mood-row { display:flex; gap:5px; margin-bottom:10px; }
+.mood-btn { flex:1; background:var(--surf2); border:1px solid var(--border); border-radius:8px;
+  padding:8px 2px; font-size:.72rem; color:var(--text2); cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:3px; transition:all .15s; }
+.mood-btn.selected { border-color:var(--cyan); background:rgba(0,212,255,.12); color:var(--cyan); }
+.mood-btn span { font-size:.58rem; }
+#journal-note { width:100%; background:var(--surf2); border:1px solid var(--border);
+  border-radius:8px; padding:10px 12px; color:var(--text1); font-size:.85rem;
+  resize:vertical; font-family:inherit; margin-bottom:10px; box-sizing:border-box;
+  min-height:72px; }
+#journal-note:focus { border-color:var(--cyan); outline:none; }
+.j-entry { background:var(--surf); border:1px solid var(--border); border-radius:10px;
+  padding:11px 13px; margin-top:9px; }
+.j-entry-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; }
+.j-day  { font-size:.7rem; color:var(--cyan); font-weight:700; }
+.j-mood { font-size:.82rem; color:var(--text2); }
+.j-date { font-size:.63rem; color:var(--text3); }
+.j-note { font-size:.82rem; color:var(--text1); line-height:1.55; }
+
 @keyframes badge-pop {
   0%   { transform:scale(.7); opacity:.3; }
   60%  { transform:scale(1.08); }
@@ -672,6 +694,20 @@ input[type=datetime-local]::-webkit-calendar-picker-indicator { filter:invert(.5
       <div class="ci-all-wrap mt16">
         <button class="btn btn-ghost btn-sm ci-add-btn" onclick="openEditModal()">＋ Add Entry</button>
         <div id="ci-history"></div>
+      </div>
+      <div class="journal-wrap" id="journal-section">
+        <div class="card-lbl">📔 Day Journal</div>
+        <div class="journal-day-badge" id="journal-day-badge">Day —</div>
+        <div class="mood-row">
+          <button class="mood-btn" data-v="1" onclick="jMood(1)">😫<span>Rough</span></button>
+          <button class="mood-btn" data-v="2" onclick="jMood(2)">😕<span>Meh</span></button>
+          <button class="mood-btn" data-v="3" onclick="jMood(3)">😐<span>Okay</span></button>
+          <button class="mood-btn" data-v="4" onclick="jMood(4)">🙂<span>Good</span></button>
+          <button class="mood-btn" data-v="5" onclick="jMood(5)">🌟<span>Great</span></button>
+        </div>
+        <textarea id="journal-note" placeholder="What's on your mind? Any observations, insights, or just how you feel…"></textarea>
+        <button class="btn btn-ghost" style="width:100%;margin-bottom:4px" onclick="saveJournalEntry()">💾 Save Journal Entry</button>
+        <div id="journal-history"></div>
       </div>
     </div>
   </div>
@@ -1062,6 +1098,66 @@ const STRUGGLING = {
   ]}
 };
 
+// ── JOURNAL ──────────────────────────────────────────────────────────
+let jMoodSel = 0;
+function getJournal()      { return ls.get(K.JOURNAL,[]); }
+function saveJournal(arr)  { ls.set(K.JOURNAL,arr); }
+
+function initJournal() {
+  jMoodSel=0;
+  document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('selected'));
+  const note=document.getElementById('journal-note'); if(note) note.value='';
+  const state=fastState();
+  const badge=document.getElementById('journal-day-badge');
+  if(badge){
+    if(state){
+      const hrs=(Date.now()-new Date(state.startTime).getTime())/3600000;
+      badge.textContent='Day '+( Math.floor(hrs/24)+1 );
+    } else { badge.textContent='No active fast'; }
+  }
+  renderJournal();
+}
+
+function jMood(v){
+  jMoodSel=v;
+  document.querySelectorAll('.mood-btn').forEach(b=>b.classList.toggle('selected',Number(b.dataset.v)===v));
+}
+
+function saveJournalEntry(){
+  const state=fastState(); if(!state){ toast('No active fast'); return; }
+  const note=( document.getElementById('journal-note')||{} ).value||'';
+  if(!note.trim()&&!jMoodSel){ toast('Add a mood or note first'); return; }
+  const hrs=(Date.now()-new Date(state.startTime).getTime())/3600000;
+  const day=Math.floor(hrs/24)+1;
+  const entries=getJournal();
+  entries.push({ fastId:state.startTime, day, datetime:new Date().toISOString(), mood:jMoodSel||0, note:note.trim() });
+  saveJournal(entries);
+  toast('Journal entry saved 📔');
+  initJournal();
+}
+
+function renderJournal(){
+  const el=document.getElementById('journal-history'); if(!el) return;
+  const state=fastState();
+  const fastId=state?state.startTime:null;
+  const all=getJournal().filter(e=>!fastId||e.fastId===fastId);
+  const entries=[...all].reverse();
+  const MOODS=['','😫','😕','😐','🙂','🌟'];
+  const MLBL =['','Rough','Meh','Okay','Good','Great'];
+  if(!entries.length){
+    el.innerHTML='<p style="color:var(--text3);font-size:.78rem;text-align:center;margin-top:10px">No journal entries yet for this fast.</p>';
+    return;
+  }
+  el.innerHTML=entries.map(e=>`<div class="j-entry">
+    <div class="j-entry-hdr">
+      <span class="j-day">Day ${e.day}</span>
+      <span class="j-mood">${e.mood?MOODS[e.mood]+' '+MLBL[e.mood]:''}</span>
+      <span class="j-date">${fmtDate(e.datetime)}</span>
+    </div>
+    ${e.note?`<div class="j-note">${e.note}</div>`:''}
+  </div>`).join('');
+}
+
 // ── BADGES ────────────────────────────────────────────────────────
 const BADGES = [
   { id:'12h',  h:12,  icon:'⚡', name:'Ketosis Spark',     color:'#00d4ff', desc:'12 hours — the metabolic switch begins' },
@@ -1156,7 +1252,7 @@ function buildBadgeGrid() {
 
 // ── STORAGE ────────────────────────────────────────────────────────
 const APP_VERSION = 'v2.1.0-ft2';
-const K = { PROF:'ft_profile', STATE:'ft_state', CHKINS:'ft_checkins', DONE:'ft_done', HISTORY:'ft_history', QUOTE:'ft_quote', NOTIF:'ft_notif', LPHASE:'ft_lphase', GFIT:'ft_gfit', BADGES:'ft_badges', LBADGE:'ft_lbadge', STRUGGLES:'ft_struggles' };
+const K = { PROF:'ft_profile', STATE:'ft_state', CHKINS:'ft_checkins', DONE:'ft_done', HISTORY:'ft_history', QUOTE:'ft_quote', NOTIF:'ft_notif', LPHASE:'ft_lphase', GFIT:'ft_gfit', BADGES:'ft_badges', LBADGE:'ft_lbadge', STRUGGLES:'ft_struggles', JOURNAL:'ft_journal' };
 const ls = {
   get:(k,d=null)=>{ try{return JSON.parse(localStorage.getItem(k))??d}catch{return d} },
   set:(k,v)=>localStorage.setItem(k,JSON.stringify(v)),
@@ -1294,7 +1390,7 @@ function showTab(name) {
   const el = document.getElementById('tab-'+name);
   if (el) el.classList.add('active');
   if (name==='home')    renderHome();
-  if (name==='checkin') { initCIForm(); renderCIHistory(); }
+  if (name==='checkin') { initCIForm(); renderCIHistory(); initJournal(); }
   if (name==='report')  renderReport();
   if (name==='data')    renderData();
   window.scrollTo(0,0);
