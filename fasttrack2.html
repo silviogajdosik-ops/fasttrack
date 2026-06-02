@@ -933,31 +933,37 @@ input[type=datetime-local]::-webkit-calendar-picker-indicator { filter:invert(.5
 // ── PHASES ────────────────────────────────────────────────────────
 const PHASES = [
   { id:0,h0:0,  h1:12,  color:'#55556a',icon:'🔋',range:'0 – 12h', name:'Fuel Transition',
+    bullets:['Glucose & glycogen still primary fuel','Insulin falling, glucagon rising','Fat mobilisation beginning — lipolysis warming up'],
     desc:'Body running on glucose and glycogen. Fat metabolism is warming up as insulin falls.',
     mot:{title:'The Countdown Has Begun',
       body:'Your glycogen stores — roughly 400 calories of sugar packed into your liver and muscles — are being drawn down right now. Every passing hour edges you closer to the metabolic threshold that changes everything. This is where most people stop. You\'re already different.',
       sci:'📚 Hepatic glycogen ~80–100g depleting. Glucagon rising, insulin falling. Lipolysis warming up. Growth hormone beginning to elevate (muscle-protective).'}},
   { id:1,h0:12, h1:24,  color:'#ffd740',icon:'🔥',range:'12 – 24h',name:'Ketosis Ignition',
+    bullets:['Liver has switched to ketone production','Brain receiving BHB as clean alternative fuel','Growth hormone surging up to 5× baseline'],
     desc:'Glycogen depleted. Liver converts fatty acids to ketones. Early ketosis begins.',
     mot:{title:'🔥 The Metabolic Switch Has Flipped',
       body:'Something extraordinary just happened. Your liver has pivoted from burning glucose to manufacturing ketone bodies from fat. Beta-hydroxybutyrate is entering your bloodstream. Your brain — which can\'t run on fat directly — now has a premium alternative fuel. You\'ve crossed the threshold.',
       sci:'📚 Blood ketones rising toward 0.3–0.5 mmol/L. Growth hormone surging (up to 5× baseline) to protect lean mass. AMPK activated. mTOR suppression beginning — the cellular cleanup signal is live.'}},
   { id:2,h0:24, h1:48,  color:'#ff7043',icon:'⚡',range:'24 – 48h',name:'Deep Ketosis',
+    bullets:['Fat oxidation running at maximum rate','Blood ketones 0.5–3.0 mmol/L — measurable','Mental clarity typically peaks around now'],
     desc:'Peak fat oxidation. Ketone levels measurably high. Mental clarity typically sharpens.',
     mot:{title:'⚡ Fat-Burning Furnace — ACTIVE',
       body:'You are now running almost entirely on fat. Ketone levels in your blood are significant and measurable. Many people experience striking clarity of mind around this point — that\'s your brain thriving on BHB, a cleaner fuel than glucose. Your adipose tissue is being systematically mobilized.',
       sci:'📚 Blood ketones 0.5–3.0 mmol/L typical. Adiponectin rising (anti-inflammatory). Norepinephrine-driven thermogenesis elevated. mTOR deeply suppressed — autophagy is meaningfully active. Free fatty acid oxidation at maximum.'}},
   { id:3,h0:48, h1:72,  color:'#00d4ff',icon:'🔬',range:'48 – 72h',name:'Peak Autophagy',
+    bullets:['Cellular self-cleaning (autophagy) at full power','Damaged proteins & organelles being recycled','mTOR suppressed, AMPK active — Nobel Prize science'],
     desc:'Cellular self-cleaning at maximum. Damaged proteins and organelles recycled and rebuilt.',
     mot:{title:'🔬 Your Cells Are Self-Repairing',
       body:'This is elite territory. Autophagy — the process Yoshinori Ohsumi won the 2016 Nobel Prize in Medicine for discovering — is now at full operation in every cell of your body. Damaged proteins, misfolded molecules, worn-out mitochondria: all being systematically disassembled and recycled into fresh cellular components.',
       sci:'📚 Autophagy flux at peak. Beclin-1, ULK1, and LC3-II highly active. Associated with: reduced senescent cell burden, improved insulin sensitivity, neuronal regeneration markers, measurable reduction in inflammatory cytokines.'}},
   { id:4,h0:72, h1:120, color:'#8b5cf6',icon:'🧬',range:'72 – 120h',name:'Immune Regeneration',
+    bullets:['Aged immune cells systematically cleared','Haematopoietic stem cells producing fresh replacements','IGF-1 drop triggers deep regeneration signal'],
     desc:'Old immune cells cleared. Hematopoietic stem cells activated to rebuild immunity.',
     mot:{title:'🧬 Your Immune System Is Rebooting',
       body:'You\'ve reached territory most people never access. Your body is now actively clearing damaged, aged immune cells and triggering hematopoietic stem cells to produce fresh replacements. Valter Longo\'s research at USC demonstrated that 72h+ fasting essentially regenerates the immune system.',
       sci:'📚 IGF-1 significantly reduced → hematopoietic stem cell proliferation. FOXO3 transcription factor activated (longevity gene). Significant regeneration of lymphocytes and myeloid cells. Gut microbiome diversity improving.'}},
   { id:5,h0:120,h1:Infinity,color:'#00e676',icon:'🌟',range:'120h+', name:'Deep Metabolic Reset',
+    bullets:['BDNF elevated — brain building new neural connections','Sirtuins (longevity proteins) running at full capacity','Stem cell mobilisation across multiple tissue types'],
     desc:'Profound regeneration. Sirtuins active. BDNF elevated. Metabolic age declining.',
     mot:{title:'🌟 You Are in Legendary Territory',
       body:'BDNF — brain-derived neurotrophic factor — is significantly elevated, meaning your brain is literally building new neural connections. Sirtuins, the proteins most associated with longevity, are running at full capacity. You are operating in a biological state that humans rarely access in the modern world.',
@@ -1504,7 +1510,7 @@ function tick() {
   const pdName = document.getElementById('phase-detail-name');
   if(pdName) pdName.textContent = phase.icon+' '+phase.name;
   const pdBullets = document.getElementById('phase-detail-bullets');
-  if(pdBullets) pdBullets.innerHTML = '<li>'+phase.desc+'</li>';
+  if(pdBullets) pdBullets.innerHTML = (phase.bullets||[phase.desc]).map(b=>`<li>${b}</li>`).join('');
   const pdSci = document.getElementById('phase-detail-sci');
   if(pdSci) pdSci.textContent = phase.mot.sci;
 
