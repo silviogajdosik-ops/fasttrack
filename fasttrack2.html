@@ -496,6 +496,9 @@ input[type=datetime-local]::-webkit-calendar-picker-indicator { filter:invert(.5
 .tl-collapsible summary { font-size:.7rem; color:var(--text3); text-transform:uppercase;
   letter-spacing:.12em; cursor:pointer; outline:none; list-style:none; }
 .tl-collapsible summary::-webkit-details-marker { display:none; }
+.bg-section-hdr { width:100%; font-size:.65rem; color:var(--text3); text-transform:uppercase;
+  letter-spacing:.12em; padding:8px 0 4px; margin-top:4px; border-top:1px solid var(--border); }
+.bg-section-hdr:first-child { border-top:none; margin-top:0; }
 .tl-collapsible .tl-wrap { margin-top:14px; }
 
 .struggling-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:14px; }
@@ -1238,16 +1241,61 @@ function buildBadgeRack() {
 function buildBadgeGrid() {
   const allEarned = earnedBadges();
   const allIds = new Set(allEarned.map(b=>b.id));
-  return BADGES.map(badge=>{
-    const ok = allIds.has(badge.id);
-    const times = allEarned.filter(b=>b.id===badge.id).length;
+  const renderBadge = (badge, lockLabel) => {
+    const ok=allIds.has(badge.id), times=allEarned.filter(b=>b.id===badge.id).length;
     return `<div class="bg-badge ${ok?'earned':'locked'}">
       <div class="bg-icon" style="${ok?'color:'+badge.color:'filter:grayscale(1)'}">${badge.icon}</div>
       <div class="bg-name" style="${ok?'color:'+badge.color:''}">${badge.name}</div>
       <div class="bg-desc">${badge.desc}</div>
-      ${ok ? `<div class="bg-count" style="color:${badge.color}">×${times} earned</div>` : `<div class="bg-locked">🔒 unlock at ${badge.h}h</div>`}
+      ${ok?`<div class="bg-count" style="color:${badge.color}">×${times} earned</div>`:`<div class="bg-locked">🔒 ${lockLabel}</div>`}
     </div>`;
-  }).join('');
+  };
+  const timeSection = '<div class="bg-section-hdr">⏱ Fast Duration</div>'+BADGES.map(b=>renderBadge(b,'unlock at '+b.h+'h')).join('');
+  const lifeSection = '<div class="bg-section-hdr">🏆 Lifetime Achievements</div>'+LIFETIME_BADGES.map(b=>renderBadge(b,b.desc)).join('');
+  return timeSection+lifeSection;
+}
+
+// ── LIFETIME BADGES ─────────────────────────────────────────────────
+const LIFETIME_BADGES = [
+  { id:'trilogy',  icon:'🎯', name:'Trilogy',   color:'#00d4ff', desc:'Complete 3 fasts',       type:'fasts',    n:3   },
+  { id:'high5',    icon:'✋', name:'High Five',  color:'#00ff88', desc:'Complete 5 fasts',       type:'fasts',    n:5   },
+  { id:'decade',   icon:'🔟', name:'Decade',     color:'#ffd700', desc:'Complete 10 fasts',      type:'fasts',    n:10  },
+  { id:'consist',  icon:'📅', name:'Consistent', color:'#a78bfa', desc:'Log 7 check-ins total',  type:'checkins', n:7   },
+  { id:'dedicatd', icon:'💎', name:'Dedicated',  color:'#00d4ff', desc:'Log 14 check-ins total', type:'checkins', n:14  },
+  { id:'commited', icon:'🏗️', name:'Committed',  color:'#ff7043', desc:'Log 30 check-ins total', type:'checkins', n:30  },
+  { id:'torch',    icon:'🔦', name:'Torch',      color:'#ffd740', desc:'Lose 2kg fat total',     type:'fatlost',  kg:2  },
+  { id:'inferno',  icon:'🔥', name:'Inferno',    color:'#ff7043', desc:'Lose 5kg fat total',     type:'fatlost',  kg:5  },
+  { id:'furnace',  icon:'🌋', name:'Furnace',    color:'#e040fb', desc:'Lose 10kg fat total',    type:'fatlost',  kg:10 },
+];
+
+function checkLifetimeBadges() {
+  const hist = ls.get('ft_history',[]);
+  const allEarned = earnedBadges();
+  const allIds = new Set(allEarned.map(b=>b.id));
+  const numFasts = hist.length;
+  const totalCheckins = hist.reduce((s,f)=>s+(f.checkins?f.checkins.length:0),0);
+  const totalFatLost  = hist.reduce((s,f)=>{
+    if(f.startWeight&&f.startBodyFat&&f.finalWeight&&f.finalFat){
+      return s+Math.max(0,(f.startWeight*f.startBodyFat/100)-(f.finalWeight*f.finalFat/100));
+    }
+    return s;
+  },0);
+  let anyNew=false;
+  for(const badge of LIFETIME_BADGES){
+    if(allIds.has(badge.id)) continue;
+    const earn =
+      (badge.type==='fasts'    && numFasts>=badge.n) ||
+      (badge.type==='checkins' && totalCheckins>=badge.n) ||
+      (badge.type==='fatlost'  && totalFatLost>=badge.kg);
+    if(earn){
+      const arr=earnedBadges();
+      arr.push({id:badge.id,earnedAt:Date.now(),fastStart:'lifetime'});
+      saveEarnedBadges(arr);
+      showBadgeToast(badge);
+      anyNew=true;
+    }
+  }
+  return anyNew;
 }
 
 // ── STORAGE ────────────────────────────────────────────────────────
@@ -1299,6 +1347,7 @@ let activeTab = 'home';
 
 function init() {
   const vEl=document.getElementById('app-ver'); if(vEl) vEl.textContent=APP_VERSION;
+  checkLifetimeBadges();
   // Migrate legacy ft_done -> ft_history (one-time, v2.0+)
   const _legacyDone=ls.get(K.DONE); const _hist=ls.get(K.HISTORY);
   if(_legacyDone&&!_hist){ ls.set(K.HISTORY,[_legacyDone]); }
@@ -1477,6 +1526,7 @@ function confirmEndFast() {
   };
   ls.set(K.DONE, _fastRecord);
   const _h=fastHistory(); _h.push(_fastRecord); ls.set(K.HISTORY,_h);
+  checkLifetimeBadges();
 
   ls.del(K.STATE);
   if (timerID) { clearInterval(timerID); timerID=null; }
