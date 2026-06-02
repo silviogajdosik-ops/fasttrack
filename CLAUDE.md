@@ -13,11 +13,11 @@ All data in `localStorage`. Dark mode, mobile-first, Service Worker offline supp
 ## File Structure
 ```
 fasttrack.html           ← STARA APP — v1.9.0, završena, NE DIRAJ
-fasttrack2.html          ← NOVA APP — v2-fasttrack2 branch, aktivni razvoj
-start-fasttrack.bat      ← lokalni server launcher (http://localhost:8080/fasttrack.html)
-FASTTRACK2_PLAN.md       ← 10 featura za fasttrack2, uvijek čitaj na startu sesije
+fasttrack2.html          ← v2-fasttrack2 branch, završena
+fasttrack3/              ← V3 AKTIVNA APP — ES moduli, multi-file arhitektura
+start-fasttrack.bat      ← lokalni server launcher
+FASTTRACK3_PLAN.md       ← plan za v3 (uvijek čitaj na startu)
 CLAUDE.md                ← this file, always auto-loaded
-CLAUDE_LESSONS_LEARNED.md ← ARCHIVED — do not auto-read
 ```
 
 **Naming konvencija (od v1.5.3):** Fiksno ime `fasttrack.html` — git branches i tagovi čuvaju historiju verzija. Ne trebamo versioned fajlove više.
@@ -110,12 +110,17 @@ Token limit prekida razgovor bez upozorenja. Sljedeća sesija ne zna ništa.
 **Grana:** `v1.5-wellbeing-journal` (finished, do not touch)
 **Zadnji commit:** `v2.0.0 — Multi-fast history`
 
-### fasttrack2.html (aktivna app)
-**Grana:** `v2-fasttrack2`
-**Zadnji commit:** `v2.6.0-ft2 — F9/F4/F10`
-**Zadnji commit (F6):** `v2.6.0-ft2 — History dashboard improvements`
-**SW cache:** `ft2-v2.1`
-**APP_VERSION:** `v2.1.0-ft2` (bump needed)
+### fasttrack2.html
+**Grana:** `v2-fasttrack2` (završena, ne diraj)
+**Zadnji commit:** `v2.6.1-ft2`
+
+### fasttrack3/ (AKTIVNA APP)
+**Grana:** `v2-fasttrack2` (isti branch, subfolder)
+**Zadnji commit:** `v3.0.0 — Initial modular architecture`
+**APP_VERSION:** `v3.0.0`
+**SW cache:** `ft3-v3.0`
+**Live URL:** `https://silviogajdosik-ops.github.io/fasttrack/fasttrack3/`
+**Struktura:** 12 ES modula, sw.js, css/style.css, index.html, manifest.json
 
 ---
 

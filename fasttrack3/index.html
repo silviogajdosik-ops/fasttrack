@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#08080f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>⚡ FastTrack</title>
+<link rel="stylesheet" href="css/style.css?v=3.0">
+<link rel="manifest" href="manifest.json">
+</head>
+<body>
+
+<!-- ── SETUP SCREEN ─────────────────────────────────────────────── -->
+<div id="setup-screen" class="screen active">
+  <div class="setup-glow">⚡</div>
+  <h1 class="setup-title">FastTrack</h1>
+  <p class="setup-sub">Track the science unfolding inside you.<br>Let's set up your profile first.</p>
+  <div class="setup-card">
+    <div class="setup-step">Step 1 — Your Profile</div>
+    <div class="row2">
+      <div class="ig">
+        <label class="il" for="su-name">Name</label>
+        <input type="text" id="su-name" placeholder="Your name" value="Silvio" autocomplete="given-name">
+      </div>
+      <div class="ig">
+        <label class="il" for="su-age">Age</label>
+        <input type="number" id="su-age" placeholder="46" value="46" min="10" max="120" step="1">
+      </div>
+    </div>
+    <div class="row2">
+      <div class="ig">
+        <label class="il" for="su-gender">Gender</label>
+        <select id="su-gender">
+          <option value="Male" selected>Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="ig">
+        <label class="il" for="su-height">Height (cm)</label>
+        <input type="number" id="su-height" placeholder="180" min="100" max="250" step="1">
+      </div>
+    </div>
+    <button class="btn btn-primary" id="btn-setup-submit">🚀 &nbsp;Let's Begin</button>
+  </div>
+</div>
+
+<!-- ── MAIN APP ──────────────────────────────────────────────────── -->
+<div id="main-app" class="screen">
+
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-icon">⚡</span>
+      <span class="brand-name">FastTrack</span>
+      <span id="app-ver" style="font-size:.6rem;color:var(--text3);margin-left:5px;font-weight:400;vertical-align:middle"></span>
+    </div>
+    <div class="hbtns">
+      <button class="hbtn" id="profile-btn">👤 Profile</button>
+    </div>
+  </header>
+
+  <div id="app">
+
+    <!-- HOME -->
+    <div id="tab-home" class="tab active">
+      <div class="dash" id="home-dash"></div>
+    </div>
+
+    <!-- CHECK-IN -->
+    <div id="tab-checkin" class="tab">
+      <div class="screen-hd">
+        <h2 class="screen-title">Morning Check-in</h2>
+        <p class="screen-sub">Log your daily measurements</p>
+      </div>
+      <div class="fp">
+        <div class="ig">
+          <label class="il" for="ci-dt">Date &amp; Time</label>
+          <input type="datetime-local" id="ci-dt">
+        </div>
+        <div class="ig">
+          <label class="il" for="ci-wt">Weight (kg)</label>
+          <input type="number" id="ci-wt" placeholder="e.g. 83.5" step="0.1" min="30" max="350">
+          <div class="field-err" id="ci-wt-err"></div>
+        </div>
+        <div class="ig">
+          <label class="il" for="ci-bf">Body Fat %</label>
+          <input type="number" id="ci-bf" placeholder="e.g. 20.5" step="0.1" min="2" max="70">
+          <div class="field-err" id="ci-bf-err"></div>
+        </div>
+
+        <!-- Wellbeing -->
+        <div class="wb-group">
+          <div class="wb-label">⚡ Energy</div>
+          <div class="wb-btns" id="wb-energy">
+            <button class="wb-btn" data-v="1" aria-label="Energy level 1 - Exhausted">😴<span>1</span></button>
+            <button class="wb-btn" data-v="2" aria-label="Energy level 2 - Low">😩<span>2</span></button>
+            <button class="wb-btn" data-v="3" aria-label="Energy level 3 - Okay">😐<span>3</span></button>
+            <button class="wb-btn" data-v="4" aria-label="Energy level 4 - Good">💪<span>4</span></button>
+            <button class="wb-btn" data-v="5" aria-label="Energy level 5 - Great">⚡<span>5</span></button>
+          </div>
+        </div>
+        <div class="wb-group">
+          <div class="wb-label">🍽️ Hunger</div>
+          <div class="wb-btns" id="wb-hunger">
+            <button class="wb-btn" data-v="1" aria-label="Hunger level 1 - Intense">🔥<span>1</span></button>
+            <button class="wb-btn" data-v="2" aria-label="Hunger level 2 - High">😫<span>2</span></button>
+            <button class="wb-btn" data-v="3" aria-label="Hunger level 3 - Moderate">😐<span>3</span></button>
+            <button class="wb-btn" data-v="4" aria-label="Hunger level 4 - Low">🙂<span>4</span></button>
+            <button class="wb-btn" data-v="5" aria-label="Hunger level 5 - None">😌<span>5</span></button>
+          </div>
+        </div>
+        <div class="wb-group">
+          <div class="wb-label">🧠 Mental Clarity</div>
+          <div class="wb-btns" id="wb-clarity">
+            <button class="wb-btn" data-v="1" aria-label="Clarity level 1 - Foggy">🌫️<span>1</span></button>
+            <button class="wb-btn" data-v="2" aria-label="Clarity level 2 - Hazy">😵<span>2</span></button>
+            <button class="wb-btn" data-v="3" aria-label="Clarity level 3 - Okay">🤔<span>3</span></button>
+            <button class="wb-btn" data-v="4" aria-label="Clarity level 4 - Clear">💡<span>4</span></button>
+            <button class="wb-btn" data-v="5" aria-label="Clarity level 5 - Sharp">🧠<span>5</span></button>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" id="btn-save-checkin" style="margin-top:16px">💾 &nbsp;Save Check-in</button>
+
+        <div class="ci-all-wrap">
+          <button class="btn btn-ghost btn-sm ci-add-btn" id="btn-add-entry">＋ Add Entry</button>
+          <div id="ci-history"></div>
+        </div>
+
+        <!-- Journal -->
+        <div class="journal-wrap" id="journal-section">
+          <div class="card-lbl">📔 Day Journal</div>
+          <div class="journal-day-badge" id="journal-day-badge">Day —</div>
+          <div class="mood-row">
+            <button class="mood-btn" data-v="1" aria-label="Mood: Rough">😫<span>Rough</span></button>
+            <button class="mood-btn" data-v="2" aria-label="Mood: Meh">😕<span>Meh</span></button>
+            <button class="mood-btn" data-v="3" aria-label="Mood: Okay">😐<span>Okay</span></button>
+            <button class="mood-btn" data-v="4" aria-label="Mood: Good">🙂<span>Good</span></button>
+            <button class="mood-btn" data-v="5" aria-label="Mood: Great">🌟<span>Great</span></button>
+          </div>
+          <textarea id="journal-note" placeholder="What's on your mind? Any observations, insights, or just how you feel…"></textarea>
+          <button class="btn btn-ghost" id="btn-save-journal" style="width:100%;margin-bottom:4px">💾 Save Journal Entry</button>
+          <div id="journal-history"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORT -->
+    <div id="tab-report" class="tab">
+      <div id="report-content" style="padding:16px;display:flex;flex-direction:column;gap:13px;"></div>
+    </div>
+
+    <!-- DATA -->
+    <div id="tab-data" class="tab">
+      <div style="padding:16px;display:flex;flex-direction:column;gap:13px;">
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;">
+            <span class="card-lbl" style="margin-bottom:0">Profile</span>
+            <button class="btn btn-ghost btn-sm btn-icon" id="btn-edit-profile">✏️ Edit</button>
+          </div>
+          <div id="profile-rows"></div>
+        </div>
+        <div class="card">
+          <div class="card-lbl">Data Management</div>
+          <div style="display:flex;flex-direction:column;gap:9px;">
+            <button class="btn btn-ghost btn-sm" id="btn-export-csv">📤 &nbsp;Export to CSV</button>
+            <button class="btn btn-ghost btn-sm" id="btn-open-reset">🔄 &nbsp;Reset All Data</button>
+          </div>
+        </div>
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;">
+            <span class="card-lbl" style="margin-bottom:0">Google Fit &amp; Import</span>
+          </div>
+          <div id="gfit-section"></div>
+        </div>
+        <div class="card">
+          <div class="card-lbl">Notifications</div>
+          <div id="notif-settings"></div>
+        </div>
+        <div class="card">
+          <div class="card-lbl">🏅 Achievements</div>
+          <div id="badge-grid-wrap" class="badge-grid"></div>
+          <div class="card-lbl" style="margin-top:18px">All Check-ins</div>
+          <div id="all-checkins"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /#app -->
+
+  <nav class="bottom-nav" role="navigation" aria-label="Main navigation">
+    <div id="nav-pill" class="nav-indicator" aria-hidden="true"></div>
+    <button class="nav-btn active" data-tab="home"    aria-label="Home"><span class="ni">🏠</span><span>Home</span></button>
+    <button class="nav-btn"        data-tab="checkin" aria-label="Check-in"><span class="ni">📊</span><span>Check-in</span></button>
+    <button class="nav-btn"        data-tab="report"  aria-label="Report"><span class="ni">📈</span><span>Report</span></button>
+    <button class="nav-btn"        data-tab="data"    aria-label="Data"><span class="ni">⚙️</span><span>Data</span></button>
+  </nav>
+
+</div><!-- /#main-app -->
+
+<!-- ── MODALS ────────────────────────────────────────────────────── -->
+
+<!-- Profile -->
+<div id="profile-modal" class="overlay">
+  <div class="modal" role="dialog" aria-labelledby="pm-title" aria-modal="true">
+    <div class="mpip"></div>
+    <h2 class="modal-title" id="pm-title">Edit Profile</h2>
+    <div class="row2">
+      <div class="ig"><label class="il" for="pm-name">Name</label><input type="text" id="pm-name"></div>
+      <div class="ig"><label class="il" for="pm-age">Age</label><input type="number" id="pm-age" min="10" max="120"></div>
+    </div>
+    <div class="row2">
+      <div class="ig">
+        <label class="il" for="pm-gender">Gender</label>
+        <select id="pm-gender"><option>Male</option><option>Female</option><option>Other</option></select>
+      </div>
+      <div class="ig"><label class="il" for="pm-height">Height (cm)</label><input type="number" id="pm-height" min="100" max="250"></div>
+    </div>
+    <div class="modal-acts">
+      <button class="btn btn-primary" id="btn-profile-save">💾 &nbsp;Save Profile</button>
+      <button class="btn btn-ghost"   id="btn-profile-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Start fast -->
+<div id="start-modal" class="overlay">
+  <div class="modal" role="dialog" aria-labelledby="sm-title" aria-modal="true">
+    <div class="mpip"></div>
+    <h2 class="modal-title" id="sm-title">🚀 Start Fast</h2>
+    <p class="modal-desc">Set your start time and current measurements. You can backdate the start if your fast already began.</p>
+    <div class="ig"><label class="il" for="sm-dt">Start Date &amp; Time</label><input type="datetime-local" id="sm-dt"></div>
+    <div class="row2">
+      <div class="ig"><label class="il" for="sm-wt">Weight (kg)</label><input type="number" id="sm-wt" placeholder="83.5" step="0.1"></div>
+      <div class="ig"><label class="il" for="sm-bf">Body Fat %</label><input type="number" id="sm-bf" placeholder="20.5" step="0.1"></div>
+    </div>
+    <div class="modal-acts">
+      <button class="btn btn-primary" id="btn-confirm-start">🚀 &nbsp;Start Fast</button>
+      <button class="btn btn-ghost"   id="btn-cancel-start">Cancel</button>
+    </div>
+    <p class="modal-note">* Weight and body fat % are saved as your first check-in.</p>
+  </div>
+</div>
+
+<!-- Edit start time -->
+<div id="editstart-modal" class="overlay">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="mpip"></div>
+    <h2 class="modal-title">✏️ Edit Start Time</h2>
+    <p class="modal-desc">Adjust when your fast began.</p>
+    <div class="ig"><label class="il" for="est-dt">Start Date &amp; Time</label><input type="datetime-local" id="est-dt"></div>
+    <div class="modal-acts">
+      <button class="btn btn-primary" id="btn-confirm-edit-start">✅ &nbsp;Update</button>
+      <button class="btn btn-ghost"   id="btn-cancel-edit-start">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- End fast -->
+<div id="end-modal" class="overlay">
+  <div class="modal" role="dialog" aria-labelledby="end-title" aria-modal="true">
+    <div class="mpip"></div>
+    <h2 class="modal-title" id="end-title">🏁 End Fast</h2>
+    <p class="modal-desc">Log your final measurements to generate your complete report.</p>
+    <div class="row2">
+      <div class="ig"><label class="il" for="em-wt">Final Weight (kg)</label><input type="number" id="em-wt" placeholder="82.0" step="0.1"></div>
+      <div class="ig"><label class="il" for="em-bf">Final Body Fat %</label><input type="number" id="em-bf" placeholder="19.5" step="0.1"></div>
+    </div>
+    <div class="modal-acts">
+      <button class="btn btn-danger" id="btn-confirm-end">🏁 &nbsp;End Fast &amp; Generate Report</button>
+      <button class="btn btn-ghost"  id="btn-cancel-end">Keep Going</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit / Add check-in -->
+<div id="ci-edit-modal" class="overlay">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="mpip"></div>
+    <h2 class="modal-title" id="ci-edit-title">✏️ Edit Check-in</h2>
+    <input type="hidden" id="ci-edit-id">
+    <div class="ig"><label class="il" for="ci-edit-dt">Date &amp; Time</label><input type="datetime-local" id="ci-edit-dt"></div>
+    <div class="row2">
+      <div class="ig">
+        <label class="il" for="ci-edit-wt">Weight (kg)</label>
+        <input type="number" id="ci-edit-wt" placeholder="83.5" step="0.1">
+        <div class="field-err" id="ci-edit-wt-err"></div>
+      </div>
+      <div class="ig"><label class="il" for="ci-edit-bf">Body Fat %</label><input type="number" id="ci-edit-bf" placeholder="20.5" step="0.1"></div>
+    </div>
+    <div class="modal-acts">
+      <button class="btn btn-primary" id="btn-save-edit-checkin">💾 &nbsp;Save</button>
+      <button class="btn btn-ghost"   id="btn-cancel-edit-checkin">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Struggling modal -->
+<div id="struggling-modal" class="overlay">
+  <div class="modal" role="dialog" aria-labelledby="sg-title" aria-modal="true">
+    <div class="mpip"></div>
+    <h2 class="modal-title" id="sg-title">⚠️ I'm Struggling</h2>
+    <div id="struggling-step1">
+      <p class="modal-desc">What's the hardest part right now? Choose what fits most:</p>
+      <div class="struggling-grid">
+        <button class="sg-btn" data-cat="hunger"  aria-label="Struggling with hunger">🍽️<span>Hunger</span></button>
+        <button class="sg-btn" data-cat="cravings" aria-label="Struggling with cravings">🧠<span>Cravings</span></button>
+        <button class="sg-btn" data-cat="energy"   aria-label="Struggling with energy">⚡<span>Low Energy</span></button>
+        <button class="sg-btn" data-cat="boredom"  aria-label="Struggling with boredom">😐<span>Boredom</span></button>
+        <button class="sg-btn" data-cat="social"   aria-label="Struggling with social pressure">👥<span>Social</span></button>
+        <button class="sg-btn" data-cat="quit"     aria-label="Want to quit">🔥<span>Want to Quit</span></button>
+      </div>
+    </div>
+    <div id="struggling-step2" style="display:none">
+      <div class="sg-time" id="sg-time"></div>
+      <p class="sg-msg" id="sg-msg"></p>
+      <div class="sg-sci" id="sg-sci"></div>
+      <div class="modal-acts" style="margin-top:16px">
+        <button class="btn btn-ghost" id="btn-struggling-back">← Different Challenge</button>
+        <button class="btn btn-ghost" id="btn-close-struggling">✓ Got It</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Reset -->
+<div id="reset-modal" class="overlay">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="mpip"></div>
+    <h2 class="modal-title">🔄 Reset All Data</h2>
+    <p class="modal-desc">This will permanently delete all your fasting data, check-ins, badges, and settings. This cannot be undone.</p>
+    <div class="modal-acts">
+      <button class="btn btn-danger" id="btn-confirm-reset">🗑️ &nbsp;Yes, Delete Everything</button>
+      <button class="btn btn-ghost"  id="btn-cancel-reset">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Share modal -->
+<div id="share-modal" class="overlay">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="mpip"></div>
+    <h2 class="modal-title">📸 Share Your Journey</h2>
+    <img id="share-preview" class="share-preview" alt="Fasting infographic preview">
+    <canvas id="share-canvas" style="display:none"></canvas>
+    <div class="share-btns">
+      <button class="btn btn-ghost btn-sm" id="btn-download-infographic" style="flex:1">📥 &nbsp;Save Image</button>
+      <button class="btn btn-ghost btn-sm" id="btn-native-share" style="flex:1;display:none">🔗 &nbsp;Share</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toast-wrap" class="toast-wrap" aria-live="polite"></div>
+
+<!-- ── Cancel button wiring (in HTML for clarity) ─────────────────
+     All cancel buttons close their parent overlay via JS below    -->
+<script type="module" src="js/main.js?v=3.0"></script>
+<script type="module">
+  // Cancel / close buttons — wired here to keep main.js clean
+  import { closeModal } from './js/ui.js?v=3.0';
+  [
+    ['btn-profile-cancel',       'profile-modal'],
+    ['btn-cancel-start',         'start-modal'],
+    ['btn-cancel-edit-start',    'editstart-modal'],
+    ['btn-cancel-end',           'end-modal'],
+    ['btn-cancel-edit-checkin',  'ci-edit-modal'],
+    ['btn-close-struggling',     'struggling-modal'],
+    ['btn-cancel-reset',         'reset-modal'],
+  ].forEach(([btnId, modalId]) => {
+    document.getElementById(btnId)?.addEventListener('click', () => closeModal(modalId));
+  });
+  // Edit profile opens modal
+  document.getElementById('btn-edit-profile')?.addEventListener('click', () => {
+    import('./js/ui.js?v=3.0').then(ui => ui.openModal('profile-modal'));
+  });
+</script>
+
+</body>
+</html>
