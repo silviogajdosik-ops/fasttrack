@@ -445,6 +445,59 @@ input[type=datetime-local]::-webkit-calendar-picker-indicator { filter:invert(.5
 .bt-name  { font-size:.9rem; font-weight:700; line-height:1.2; }
 .bt-desc  { font-size:.72rem; color:var(--text2); margin-top:2px; line-height:1.35; }
 
+@keyframes shimmer{0%{background-position:200% center}100%{background-position:-200% center}}
+.phase-bar-wrap { margin-top:14px; }
+.phase-bar-meta { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:.7rem; color:var(--text3); }
+.phase-bar-meta .pct { color:var(--text2); font-weight:600; }
+.next-ms { text-align:right; }
+.next-ms-lbl { opacity:.7; }
+.next-ms-val { color:var(--cyan); font-weight:600; }
+.phase-bar { height:5px; background:var(--surf3); border-radius:100px; overflow:hidden; }
+.phase-bar-fill { height:100%; border-radius:100px; transition:width 1.5s linear,background .6s;
+  background-size:200% auto; }
+.phase-bar-fill.shimmer-on {
+  background-image:linear-gradient(90deg,currentColor 0%,#fff8 50%,currentColor 100%);
+  animation:shimmer 2.5s linear infinite; }
+
+.phase-detail-card { background:var(--surf); border:1px solid var(--border); border-radius:var(--r);
+  padding:14px 16px; margin-bottom:12px; cursor:pointer; list-style:none; }
+.phase-detail-card summary { display:flex; justify-content:space-between; align-items:center;
+  outline:none; list-style:none; }
+.phase-detail-card summary::-webkit-details-marker { display:none; }
+.pdc-name { font-size:.9rem; font-weight:700; }
+.pdc-toggle { font-size:.72rem; color:var(--cyan); white-space:nowrap; margin-left:8px; }
+.pdc-bullets { margin:12px 0 4px; padding:0; list-style:none; display:flex; flex-direction:column; gap:6px; }
+.pdc-bullets li { font-size:.8rem; color:var(--text2); line-height:1.4; }
+.pdc-bullets li::before { content:"▸ "; color:var(--cyan); }
+.pdc-sci { font-size:.72rem; color:var(--text3); margin-top:8px; line-height:1.5; }
+
+.recent-ci-card { background:var(--surf); border:1px solid var(--border); border-radius:var(--r);
+  padding:14px 16px; margin-bottom:12px; }
+.rci-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.rci-lbl { font-size:.66rem; color:var(--text3); text-transform:uppercase; letter-spacing:.12em; }
+.rci-date { font-size:.68rem; color:var(--text3); }
+.rci-stats { display:flex; gap:10px; }
+.rci-stat { flex:1; text-align:center; }
+.rci-val { font-size:1.15rem; font-weight:700; }
+.rci-unit { font-size:.65rem; color:var(--text3); }
+.rci-wb { display:flex; gap:6px; margin-top:10px; justify-content:center; flex-wrap:wrap; }
+.rci-wb-chip { font-size:.72rem; background:var(--surf2); border-radius:20px; padding:3px 9px; }
+
+.struggling-wrap { text-align:center; padding:6px 0 4px; margin-bottom:8px; }
+.btn-struggling { display:block; width:100%; padding:15px; font-size:1rem; font-weight:700;
+  background:transparent; border:2px solid var(--red); border-radius:var(--r);
+  color:var(--red); cursor:pointer; letter-spacing:.05em;
+  transition:background .2s,color .2s; }
+.btn-struggling:active,.btn-struggling:hover { background:var(--red); color:#fff; }
+.struggling-sub { font-size:.7rem; color:var(--text3); margin:5px 0 0; }
+
+.tl-collapsible { background:var(--surf); border:1px solid var(--border); border-radius:var(--r);
+  padding:14px 16px; margin-bottom:12px; }
+.tl-collapsible summary { font-size:.7rem; color:var(--text3); text-transform:uppercase;
+  letter-spacing:.12em; cursor:pointer; outline:none; list-style:none; }
+.tl-collapsible summary::-webkit-details-marker { display:none; }
+.tl-collapsible .tl-wrap { margin-top:14px; }
+
 @keyframes badge-pop {
   0%   { transform:scale(.7); opacity:.3; }
   60%  { transform:scale(1.08); }
@@ -776,6 +829,14 @@ input[type=datetime-local]::-webkit-calendar-picker-indicator { filter:invert(.5
 </div>
 
 <!-- End Fast -->
+<div class="overlay" id="struggling-modal">
+  <div class="modal">
+    <div class="modal-title" style="color:var(--red)">⚠️ I'm Struggling</div>
+    <p style="color:var(--text2);font-size:.85rem;margin-bottom:16px">Full support coming in next update. You've got this — every hour counts.</p>
+    <p style="color:var(--cyan);font-size:.82rem;margin-bottom:20px">💧 Try: drink 500ml water, walk 10 minutes, then reassess.</p>
+    <button class="btn btn-ghost" onclick="closeModal('struggling-modal')">Close</button>
+  </div>
+</div>
 <div class="overlay" id="end-modal">
   <div class="modal">
     <div class="mpip"></div>
@@ -996,7 +1057,7 @@ function buildBadgeGrid() {
 }
 
 // ── STORAGE ────────────────────────────────────────────────────────
-const APP_VERSION = 'v1.9.0';
+const APP_VERSION = 'v2.1.0-ft2';
 const K = { PROF:'ft_profile', STATE:'ft_state', CHKINS:'ft_checkins', DONE:'ft_done', HISTORY:'ft_history', QUOTE:'ft_quote', NOTIF:'ft_notif', LPHASE:'ft_lphase', GFIT:'ft_gfit', BADGES:'ft_badges', LBADGE:'ft_lbadge' };
 const ls = {
   get:(k,d=null)=>{ try{return JSON.parse(localStorage.getItem(k))??d}catch{return d} },
@@ -1061,7 +1122,7 @@ function init() {
 
 function registerSW() {
   if (!('serviceWorker' in navigator)) return;
-  const c = `const C='ft-v2.0';
+  const c = `const C='ft2-v2.1';
     self.addEventListener('install',e=>{ e.waitUntil(Promise.resolve()); self.skipWaiting(); });
     self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));
     self.addEventListener('message',e=>{
@@ -1316,20 +1377,29 @@ function buildActiveFast(state) {
         <span id="started-txt">Started: ${fmtDate(state.startTime,true)}</span>
         <button class="edit-start-btn" onclick="openEditStartModal()">✏️ edit</button>
       </div>
-      <div class="phase-bar"><div class="phase-bar-fill" id="phase-fill" style="width:0%;background:var(--p0)"></div></div>
+      <div class="phase-bar-wrap">
+        <div class="phase-bar-meta">
+          <span class="pct" id="phase-pct">0%</span>
+          <span class="next-ms"><span class="next-ms-lbl">Next: </span><span class="next-ms-val" id="next-milestone-val">—</span></span>
+        </div>
+        <div class="phase-bar"><div class="phase-bar-fill shimmer-on" id="phase-fill" style="width:0%;color:var(--p0)"></div></div>
+      </div>
     </div>
+
+    <details class="phase-detail-card fade" id="phase-detail">
+      <summary>
+        <span class="pdc-name" id="phase-detail-name">Loading…</span>
+        <span class="pdc-toggle">What's happening ▾</span>
+      </summary>
+      <ul class="pdc-bullets" id="phase-detail-bullets"><li>Loading…</li></ul>
+      <div class="pdc-sci" id="phase-detail-sci"></div>
+    </details>
 
     <div class="motiv-card fade" id="motiv-card">
-      <div class="motiv-lbl">WHAT'S HAPPENING NOW</div>
+      <div class="motiv-lbl">YOUR BODY RIGHT NOW</div>
       <div class="motiv-title" id="motiv-title">Loading…</div>
       <div class="motiv-body"  id="motiv-body"></div>
-      <div class="motiv-sci"   id="motiv-sci"></div>
       <div id="quote-block"></div>
-    </div>
-
-    <div class="card fade">
-      <div class="card-lbl">Your Journey Timeline</div>
-      <div class="tl-wrap" id="timeline"></div>
     </div>
 
     <div class="card fade">
@@ -1337,11 +1407,56 @@ function buildActiveFast(state) {
       <div class="badge-rack" id="badge-rack">${buildBadgeRack()}</div>
     </div>
 
+    ${buildRecentCheckin()}
+
+    <div class="struggling-wrap fade">
+      <button class="btn-struggling" onclick="openStrugglingModal()">⚠️ I'm Struggling</button>
+      <p class="struggling-sub">Science-backed support for tough moments</p>
+    </div>
+
+    <details class="tl-collapsible fade">
+      <summary>📍 Journey Timeline</summary>
+      <div class="tl-wrap" id="timeline"></div>
+    </details>
+
     <div class="ac fade" style="margin-bottom:80px">
       <button class="btn btn-ghost"  onclick="showTab('checkin')">📊 &nbsp;Morning Check-in</button>
       <button class="btn btn-ghost"  onclick="openShareModal()">📸 &nbsp;Share</button>
       <button class="btn btn-danger" onclick="openModal('end-modal')">🏁 &nbsp;End Fast</button>
     </div>`;
+}
+
+function buildRecentCheckin() {
+  const cks = checkins();
+  if(!cks.length) return '';
+  const last = cks[cks.length-1];
+  const wb = last.wb || {};
+  const ENG = ['','😴','😕','😐','🙂','⚡'];
+  const HUN = ['','😋','😊','😐','😣','🤢'];
+  const CLR = ['','😶','😕','😐','😊','🎯'];
+  const chips = [
+    wb.energy  ? `<span class="rci-wb-chip">⚡ Energy ${ENG[wb.energy]||wb.energy}</span>`  : '',
+    wb.hunger  ? `<span class="rci-wb-chip">🍽️ Hunger ${HUN[wb.hunger]||wb.hunger}</span>`  : '',
+    wb.clarity ? `<span class="rci-wb-chip">🧠 Clarity ${CLR[wb.clarity]||wb.clarity}</span>` : ''
+  ].filter(Boolean).join('');
+  const fatKg = last.weight && last.bodyFat ? (last.weight*last.bodyFat/100).toFixed(1) : '—';
+  return `<div class="recent-ci-card fade">
+    <div class="rci-hdr">
+      <span class="rci-lbl">Last Check-in</span>
+      <span class="rci-date">${fmtDate(last.datetime)}</span>
+    </div>
+    <div class="rci-stats">
+      <div class="rci-stat"><div class="rci-val" style="color:var(--cyan)">${last.weight||'—'}</div><div class="rci-unit">kg</div></div>
+      <div class="rci-stat"><div class="rci-val" style="color:var(--ora)">${last.bodyFat||'—'}%</div><div class="rci-unit">Body Fat</div></div>
+      <div class="rci-stat"><div class="rci-val" style="color:var(--purp)">${fatKg}</div><div class="rci-unit">Fat kg</div></div>
+    </div>
+    ${chips ? `<div class="rci-wb">${chips}</div>` : ''}
+  </div>`;
+}
+
+function openStrugglingModal() {
+  // Full implementation in Feature 2 — Struggling Mode
+  openModal('struggling-modal');
 }
 
 // ── TIMER ──────────────────────────────────────────────────────────
@@ -1370,14 +1485,33 @@ function tick() {
   if(chip){ chip.style.color=phase.color; chip.textContent=phase.icon+' '+phase.name; }
 
   const fill = document.getElementById('phase-fill');
-  if(fill){ fill.style.width=(prog*100)+'%'; fill.style.background=phase.color; }
+  if(fill){ fill.style.width=(prog*100)+'%'; fill.style.color=phase.color; }
+
+  const pctEl = document.getElementById('phase-pct');
+  if(pctEl) pctEl.textContent = Math.round(prog*100)+'%';
+
+  const nmv = document.getElementById('next-milestone-val');
+  if(nmv) {
+    if(phase.h1===Infinity){ nmv.textContent='Final phase'; }
+    else {
+      const nextP = PHASES[phase.id+1];
+      const remH  = phase.h1 - hrs;
+      const rh=Math.floor(remH), rm=Math.floor((remH-rh)*60);
+      nmv.textContent = (nextP ? nextP.name : '—')+' in '+rh+'h '+rm+'m';
+    }
+  }
+
+  const pdName = document.getElementById('phase-detail-name');
+  if(pdName) pdName.textContent = phase.icon+' '+phase.name;
+  const pdBullets = document.getElementById('phase-detail-bullets');
+  if(pdBullets) pdBullets.innerHTML = '<li>'+phase.desc+'</li>';
+  const pdSci = document.getElementById('phase-detail-sci');
+  if(pdSci) pdSci.textContent = phase.mot.sci;
 
   const mt=document.getElementById('motiv-title');
   const mb=document.getElementById('motiv-body');
-  const ms2=document.getElementById('motiv-sci');
   if(mt) mt.textContent=phase.mot.title;
   if(mb) mb.textContent=phase.mot.body;
-  if(ms2) ms2.textContent=phase.mot.sci;
 
   const tl=document.getElementById('timeline');
   if(tl) tl.innerHTML=buildTimeline(hrs);
