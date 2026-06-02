@@ -113,6 +113,7 @@ Token limit prekida razgovor bez upozorenja. Sljedeća sesija ne zna ništa.
 ### fasttrack2.html (aktivna app)
 **Grana:** `v2-fasttrack2`
 **Zadnji commit:** `v2.6.0-ft2 — F9/F4/F10`
+**Zadnji commit (F6):** `v2.6.0-ft2 — History dashboard improvements`
 **SW cache:** `ft2-v2.1`
 **APP_VERSION:** `v2.1.0-ft2` (bump needed)
 
@@ -146,8 +147,7 @@ Token limit prekida razgovor bez upozorenja. Sljedeća sesija ne zna ništa.
 
 | Status | Feature |
 |--------|---------|
-| ✅ done | F7, F8, F2, F3, F5, F9, F4, F10 — sve osim F6 |
-| 🔲 next | Feature 6 — History dashboard improvements (sorting, PB markers, expandable) |
+| ✅ done | F7, F8, F2, F3, F5, F9, F4, F10, F6 — SVE IMPLEMENTIRANO |
 
 ## Brzi debugging checklist
 
