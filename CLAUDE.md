@@ -112,9 +112,9 @@ Token limit prekida razgovor bez upozorenja. Sljedeća sesija ne zna ništa.
 
 ### fasttrack2.html (aktivna app)
 **Grana:** `v2-fasttrack2`
-**Zadnji commit:** `v2.4.0-ft2 — Feature 3: Fast Journal`
+**Zadnji commit:** `v2.6.0-ft2 — F9/F4/F10`
 **SW cache:** `ft2-v2.1`
-**APP_VERSION:** `v2.1.0-ft2`
+**APP_VERSION:** `v2.1.0-ft2` (bump needed)
 
 ---
 
@@ -146,12 +146,8 @@ Token limit prekida razgovor bez upozorenja. Sljedeća sesija ne zna ništa.
 
 | Status | Feature |
 |--------|---------|
-| ✅ done | F7 Homepage redesign, F8 Phase cards, F2 Struggling Mode, F3 Journal |
-| 🔲 next | Feature 5 — Advanced lifetime badges (LIFETIME_BADGES separate array) |
-| 🔲 | Feature 9 — Insights sparklines (SVG, wellbeing trends) |
-| 🔲 | Feature 4 — Personal records card |
-| 🔲 | Feature 6 — History dashboard improvements |
-| 🔲 last | Feature 10 — Code organization (section comments) |
+| ✅ done | F7, F8, F2, F3, F5, F9, F4, F10 — sve osim F6 |
+| 🔲 next | Feature 6 — History dashboard improvements (sorting, PB markers, expandable) |
 
 ## Brzi debugging checklist
 

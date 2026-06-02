@@ -498,6 +498,19 @@ input[type=datetime-local]::-webkit-calendar-picker-indicator { filter:invert(.5
 .tl-collapsible summary::-webkit-details-marker { display:none; }
 .sl-legend { display:flex; gap:14px; font-size:.72rem; color:var(--text2); margin:4px 0 8px; flex-wrap:wrap; }
 .sl-legend span { display:flex; align-items:center; gap:4px; }
+.hist-sort-bar { display:flex; align-items:center; gap:6px; margin-bottom:10px; flex-wrap:wrap; }
+.sort-btn { background:var(--surf2); border:1px solid var(--border); border-radius:6px;
+  padding:4px 10px; font-size:.7rem; color:var(--text2); cursor:pointer; transition:all .15s; }
+.sort-btn.active { border-color:var(--cyan); color:var(--cyan); background:rgba(0,212,255,.08); }
+.fast-card { background:var(--surf); border:1px solid var(--border); border-radius:var(--r);
+  padding:12px 14px; margin-bottom:8px; cursor:pointer; }
+.fast-card summary { list-style:none; outline:none; display:block; }
+.fast-card summary::-webkit-details-marker { display:none; }
+.fast-card[open] { border-color:rgba(0,212,255,.4); }
+.fast-detail { margin-top:10px; padding-top:10px; border-top:1px solid var(--border); font-size:.78rem; color:var(--text2); display:flex; flex-direction:column; gap:4px; }
+.fast-detail-row { display:flex; justify-content:space-between; }
+.pb-badge { font-size:.6rem; background:rgba(255,215,0,.15); color:var(--gold);
+  border-radius:4px; padding:1px 5px; margin-left:4px; vertical-align:middle; }
 .bg-section-hdr { width:100%; font-size:.65rem; color:var(--text3); text-transform:uppercase;
   letter-spacing:.12em; padding:8px 0 4px; margin-top:4px; border-top:1px solid var(--border); }
 .bg-section-hdr:first-child { border-top:none; margin-top:0; }
@@ -2102,15 +2115,24 @@ function buildPersonalRecords() {
 }
 
 // ── FAST HISTORY v2.0 ───────────────────────────────────────────────
+let _histSort='date';
+function setHistSort(key){ _histSort=key; renderReport(); }
+
 function buildHistorySection() {
   const hist = fastHistory();
   if (hist.length < 1) return '';
   return `
     <div style="margin-top:24px">
-      <div class="card-lbl" style="padding:0 2px 10px;font-size:.75rem;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;">📚 Fast History</div>
+      <div class="card-lbl" style="padding:0 2px 6px;font-size:.75rem;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;">📚 Fast History</div>
       ${buildHistoryStats(hist)}
       ${hist.length > 1 ? buildTrendChart(hist) : ''}
       ${hist.length > 1 ? buildComparisonTable(hist) : ''}
+      ${hist.length>1?`<div class="hist-sort-bar">
+        <span style="color:var(--text3);font-size:.7rem">Sort:</span>
+        <button class="sort-btn ${_histSort==='date'?'active':''}" onclick="setHistSort('date')">Date</button>
+        <button class="sort-btn ${_histSort==='duration'?'active':''}" onclick="setHistSort('duration')">Duration</button>
+        <button class="sort-btn ${_histSort==='wtlost'?'active':''}" onclick="setHistSort('wtlost')">Wt Lost</button>
+      </div>`:''}
       ${buildFastList(hist)}
     </div>`;
 }
@@ -2193,26 +2215,61 @@ function buildComparisonTable(hist) {
 }
 
 function buildFastList(hist) {
-  const sorted=[...hist].sort((a,b)=>new Date(b.startTime)-new Date(a.startTime));
-  const cards=sorted.map((f,i)=>{
+  // Sort
+  let sorted;
+  if(_histSort==='duration') sorted=[...hist].sort((a,b)=>b.durationMs-a.durationMs);
+  else if(_histSort==='wtlost') sorted=[...hist].sort((a,b)=>(b.startWeight-b.finalWeight)-(a.startWeight-a.finalWeight));
+  else sorted=[...hist].sort((a,b)=>new Date(b.startTime)-new Date(a.startTime));
+
+  // Personal bests
+  const pbDur = hist.reduce((a,b)=>b.durationMs>a.durationMs?b:a, hist[0]).id;
+  const pbWt  = hist.filter(f=>f.startWeight&&f.finalWeight)
+                    .reduce((a,b)=>(b.startWeight-b.finalWeight)>(a.startWeight-a.finalWeight)?b:a, {id:null}).id;
+  const pbFat = hist.filter(f=>f.startWeight&&f.startBodyFat&&f.finalWeight&&f.finalFat)
+                    .reduce((a,b)=>{
+                      const af=a.startWeight*a.startBodyFat/100-a.finalWeight*a.finalFat/100;
+                      const bf=b.startWeight*b.startBodyFat/100-b.finalWeight*b.finalFat/100;
+                      return bf>af?b:a;
+                    }, {id:null}).id;
+
+  const allJ=ls.get('ft_journal',[]);
+  const cards=sorted.map((f)=>{
     const {days,hours}=fmtDur(f.durationMs);
     const wLost=(f.startWeight-f.finalWeight).toFixed(1);
     const fLost=Math.max(0,f.startWeight*f.startBodyFat/100-f.finalWeight*f.finalFat/100).toFixed(2);
-    const d=new Date(f.endTime);
-    const num=hist.length-i;
-    return `<div class="card fade" style="margin-bottom:8px;padding:12px 14px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-        <span style="font-weight:700;color:var(--text)">Fast #${num}</span>
-        <span style="font-size:.75rem;color:var(--text3)">${d.toLocaleDateString()}</span>
+    const dEnd=new Date(f.endTime), dStart=new Date(f.startTime);
+    const num=hist.indexOf(f)+1;
+    const ckCount=f.checkins?f.checkins.length:0;
+    const jCount=allJ.filter(e=>e.fastId===f.startTime).length;
+    const pbDurBadge=f.id===pbDur?'<span class="pb-badge">🏆 Longest</span>':'';
+    const pbWtBadge=f.id===pbWt?'<span class="pb-badge">🏆 Best Wt</span>':'';
+    const pbFatBadge=f.id===pbFat?'<span class="pb-badge">🏆 Best Fat</span>':'';
+    return `<details class="fast-card fade">
+      <summary>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-weight:700;color:var(--text)">Fast #${num}${pbDurBadge}</span>
+          <span style="font-size:.72rem;color:var(--text3)">${dEnd.toLocaleDateString()} ▾</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;text-align:center">
+          <div><div style="font-size:.67rem;color:var(--text3)">Duration</div>
+               <div style="font-size:.86rem;color:var(--cyan);font-weight:600">${days>0?days+'d ':''} ${hours}h</div></div>
+          <div><div style="font-size:.67rem;color:var(--text3)">Wt Lost${pbWtBadge}</div>
+               <div style="font-size:.86rem;color:var(--grn);font-weight:600">−${wLost} kg</div></div>
+          <div><div style="font-size:.67rem;color:var(--text3)">Fat Lost${pbFatBadge}</div>
+               <div style="font-size:.86rem;color:var(--grn);font-weight:600">−${fLost} kg</div></div>
+        </div>
+      </summary>
+      <div class="fast-detail">
+        <div class="fast-detail-row"><span>Started</span><span style="color:var(--text)">${dStart.toLocaleString()}</span></div>
+        <div class="fast-detail-row"><span>Ended</span><span style="color:var(--text)">${dEnd.toLocaleString()}</span></div>
+        <div class="fast-detail-row"><span>Check-ins</span><span style="color:var(--cyan)">${ckCount}</span></div>
+        <div class="fast-detail-row"><span>Journal entries</span><span style="color:var(--cyan)">${jCount}</span></div>
+        ${f.startWeight?`<div class="fast-detail-row"><span>Start weight</span><span>${f.startWeight} kg @ ${f.startBodyFat}% fat</span></div>`:''}
+        ${f.finalWeight?`<div class="fast-detail-row"><span>End weight</span><span>${f.finalWeight} kg @ ${f.finalFat}% fat</span></div>`:''}
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;text-align:center">
-        <div><div style="font-size:.69rem;color:var(--text3)">Duration</div><div style="font-size:.88rem;color:var(--cyan);font-weight:600">${days>0?days+'d ':''} ${hours}h</div></div>
-        <div><div style="font-size:.69rem;color:var(--text3)">Wt Lost</div><div style="font-size:.88rem;color:var(--grn);font-weight:600">−${wLost} kg</div></div>
-        <div><div style="font-size:.69rem;color:var(--text3)">Fat Lost</div><div style="font-size:.88rem;color:var(--grn);font-weight:600">−${fLost} kg</div></div>
-      </div>
-    </div>`;
+    </details>`;
   }).join('');
-  return `<div class="card-lbl" style="padding:12px 2px 6px;font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;">Previous Fasts</div>${cards}`;
+  return `<div class="card-lbl" style="padding:8px 2px 6px;font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;">Previous Fasts</div>${cards}`;
 }
 
 function buildChart(cks) {
