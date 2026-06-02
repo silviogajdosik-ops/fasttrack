@@ -1,5 +1,5 @@
 /* style.css — FastTrack v3 — Mobile-First Dark PWA */
-/* v3.0 */
+/* v3.1 */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -173,6 +173,42 @@ input[type=datetime-local]::-webkit-calendar-picker-indicator { filter: invert(.
 /* ── Card ───────────────────────────────────────────────────────── */
 .card { background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); padding: 18px; }
 .card-lbl { font-size: .66rem; color: var(--text3); text-transform: uppercase; letter-spacing: .14em; margin-bottom: 13px; }
+
+/* ── Phase ring ─────────────────────────────────────────────────── */
+.timer-ring-wrap {
+  position: relative;
+  width: 220px; height: 220px;
+  margin: 0 auto 14px;
+}
+.phase-ring {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%;
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+.ring-bg {
+  fill: none;
+  stroke: var(--surf3);
+  stroke-width: 8;
+}
+.ring-fill {
+  fill: none;
+  stroke: var(--phase-color, var(--cyan));
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 603.2;
+  stroke-dashoffset: 603.2;
+  transition: stroke-dashoffset 1.5s linear, stroke 0.6s;
+  filter: drop-shadow(0 0 8px var(--phase-color, var(--cyan)));
+}
+.timer-inner {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center; width: 100%;
+}
+.timer-inner .timer-row { margin-bottom: 8px; }
+.timer-inner .phase-chip { margin-bottom: 0; }
 
 /* ── Timer ──────────────────────────────────────────────────────── */
 .timer-card {

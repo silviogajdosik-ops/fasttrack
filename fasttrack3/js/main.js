@@ -1,16 +1,16 @@
 // main.js — entry point: imports, init, glue, event listeners
-// v3.0.0
+// v3.1.0
 
-import { APP_VERSION, K, ls, fastState, checkins, doneFast, fastHistory, getProfile, migrateLegacy } from './storage.js?v=3.0';
-import { checkLifetimeBadges, buildBadgeGrid } from './badges.js?v=3.0';
-import { showTab, onTab, openModal, closeModal, onModalOpen, showScreen, updateHeaderName, toast, fmtDate, fmtDurStr, dtLocalStr, moveNavPill } from './ui.js?v=3.0';
-import { renderHome, startTimer, stopTimer } from './fasting.js?v=3.0';
-import { initCIForm, renderCIHistory, initCheckinEvents } from './checkin.js?v=3.0';
-import { initJournal, initJournalEvents } from './journal.js?v=3.0';
-import { openStrugglingModal, initStrugglingEvents } from './struggling.js?v=3.0';
-import { renderReport, initReportEvents } from './report.js?v=3.0';
-import { initNotifications, renderNotifSettings, checkPhaseMilestone } from './notifications.js?v=3.0';
-import { renderGFitSection, loadGISScript } from './gfit.js?v=3.0';
+import { APP_VERSION, K, ls, fastState, checkins, doneFast, fastHistory, getProfile, migrateLegacy } from './storage.js?v=3.1';
+import { checkLifetimeBadges, buildBadgeGrid } from './badges.js?v=3.1';
+import { showTab, onTab, openModal, closeModal, onModalOpen, showScreen, updateHeaderName, toast, fmtDate, fmtDurStr, dtLocalStr, moveNavPill } from './ui.js?v=3.1';
+import { renderHome, startTimer, stopTimer } from './fasting.js?v=3.1';
+import { initCIForm, renderCIHistory, initCheckinEvents } from './checkin.js?v=3.1';
+import { initJournal, initJournalEvents } from './journal.js?v=3.1';
+import { openStrugglingModal, initStrugglingEvents } from './struggling.js?v=3.1';
+import { renderReport, initReportEvents } from './report.js?v=3.1';
+import { initNotifications, renderNotifSettings, checkPhaseMilestone } from './notifications.js?v=3.1';
+import { renderGFitSection, loadGISScript } from './gfit.js?v=3.1';
 
 // ── Register tab renderers ─────────────────────────────────────────
 onTab('home',    () => renderHome(getProfile()));
@@ -321,6 +321,26 @@ function registerSW() {
   navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
 
+// ── Swipe navigation ──────────────────────────────────────────────
+function initSwipeGestures() {
+  const TABS = ['home', 'checkin', 'report', 'data'];
+  let startX = 0, startY = 0;
+  const el = document.getElementById('app');
+  if (!el) return;
+  el.addEventListener('touchstart', e => {
+    startX = e.changedTouches[0].clientX;
+    startY = e.changedTouches[0].clientY;
+  }, { passive: true });
+  el.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = e.changedTouches[0].clientY - startY;
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy)) return; // ignore verticals
+    const cur = TABS.indexOf(getActiveTab());
+    if (dx < 0 && cur < TABS.length - 1) showTab(TABS[cur + 1]);
+    if (dx > 0 && cur > 0)               showTab(TABS[cur - 1]);
+  }, { passive: true });
+}
+
 // ── Wire all events ────────────────────────────────────────────────
 function wireEvents() {
   // Nav buttons
@@ -380,6 +400,7 @@ function wireEvents() {
   initJournalEvents();
   initStrugglingEvents();
   initReportEvents();
+  initSwipeGestures();
 }
 
 // ── Boot ───────────────────────────────────────────────────────────

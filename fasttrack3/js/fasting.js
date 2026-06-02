@@ -1,10 +1,10 @@
 // fasting.js — timer, tick, active/idle screen builders, quote fetch
-// v3.0.0 — imports: storage, phases, badges, ui
+// v3.1.0 — imports: storage, phases, badges, ui
 
-import { K, ls, fastState, checkins, doneFast, earnedBadges } from './storage.js?v=3.0';
-import { PHASES, getPhase, phaseProgress } from './phases.js?v=3.0';
-import { checkBadges, buildBadgeRack } from './badges.js?v=3.0';
-import { fmtDate, fmtDurStr } from './ui.js?v=3.0';
+import { K, ls, fastState, checkins, doneFast, earnedBadges } from './storage.js?v=3.1';
+import { PHASES, getPhase, phaseProgress } from './phases.js?v=3.1';
+import { checkBadges, buildBadgeRack } from './badges.js?v=3.1';
+import { fmtDate, fmtDurStr } from './ui.js?v=3.1';
 
 let timerID = null;
 
@@ -86,6 +86,12 @@ export function tick() {
 
   const fill = document.getElementById('phase-fill');
   if (fill) { fill.style.width = (prog * 100) + '%'; fill.style.color = phase.color; }
+
+  const ring = document.getElementById('ring-fill');
+  if (ring) {
+    ring.style.strokeDashoffset = (603.2 * (1 - prog)).toFixed(1);
+    ring.style.stroke = phase.color;
+  }
 
   const pctEl = document.getElementById('phase-pct');
   if (pctEl) pctEl.textContent = Math.round(prog * 100) + '%';
@@ -217,14 +223,23 @@ export function buildActiveFast(state) {
   return `
     <div class="timer-card fade">
       <div class="timer-lbl">TIME FASTING</div>
-      <div class="timer-row">
-        <div class="t-unit"><span class="t-val" id="td">00</span><span class="t-lbl">DAYS</span></div>
-        <span class="t-sep">:</span>
-        <div class="t-unit"><span class="t-val" id="th">00</span><span class="t-lbl">HRS</span></div>
-        <span class="t-sep">:</span>
-        <div class="t-unit"><span class="t-val" id="tm">00</span><span class="t-lbl">MIN</span></div>
+      <div class="timer-ring-wrap">
+        <svg class="phase-ring" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle class="ring-bg"   cx="110" cy="110" r="96"/>
+          <circle class="ring-fill" id="ring-fill" cx="110" cy="110" r="96"
+            stroke-dasharray="603.2" stroke-dashoffset="603.2"/>
+        </svg>
+        <div class="timer-inner">
+          <div class="timer-row">
+            <div class="t-unit"><span class="t-val" id="td">00</span><span class="t-lbl">DAYS</span></div>
+            <span class="t-sep">:</span>
+            <div class="t-unit"><span class="t-val" id="th">00</span><span class="t-lbl">HRS</span></div>
+            <span class="t-sep">:</span>
+            <div class="t-unit"><span class="t-val" id="tm">00</span><span class="t-lbl">MIN</span></div>
+          </div>
+          <div class="phase-chip" id="phase-chip" style="color:var(--p0)">🔋 Loading…</div>
+        </div>
       </div>
-      <div class="phase-chip" id="phase-chip" style="color:var(--p0)">🔋 Loading…</div>
       <div class="started-row">
         <span id="started-txt">Started: ${fmtDate(state.startTime, true)}</span>
         <button class="edit-start-btn" id="btn-edit-start">✏️ edit</button>

@@ -1,7 +1,7 @@
 // storage.js — localStorage wrapper + all data accessors
 // v3.0.0 — no deps
 
-export const APP_VERSION = 'v3.0.0';
+export const APP_VERSION = 'v3.1.0';
 
 export const K = {
   PROF:      'ft_profile',
