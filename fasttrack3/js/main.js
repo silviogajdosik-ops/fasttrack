@@ -32,12 +32,12 @@ function init() {
     renderAll();
   }
 
+  // wireEvents() MORA biti prije renderAll() — ft:home-rendered se dispatcha u renderAll
+  registerSW();
+  wireEvents();
   initNotifications();
   const gfc = ls.get(K.GFIT, {});
   if (gfc.clientId) loadGISScript(() => {});
-
-  registerSW();
-  wireEvents();
   setTimeout(() => moveNavPill('home'), 50);
 }
 
