@@ -1,14 +1,69 @@
 // report.js — report generation, SVG charts, history section
-// v3.0.0 — imports: storage, ui
+// v3.2.0 — imports: storage, ui
 
-import { K, ls, fastState, checkins, doneFast, fastHistory, getProfile, getJournal } from './storage.js?v=3.0';
-import { fmtDate, fmtDur, fmtDurStr } from './ui.js?v=3.0';
+import { K, ls, fastState, checkins, doneFast, fastHistory, getProfile, getJournal } from './storage.js?v=3.2';
+import { fmtDate, fmtDur, fmtDurStr } from './ui.js?v=3.2';
+import { PHASES, getPhase } from './phases.js?v=3.2';
 
 let _histSort = 'date';
 
 export function setHistSort(key) {
   _histSort = key;
   renderReport();
+}
+
+
+// ── Fasting calendar ───────────────────────────────────────────────
+export function buildFastingCalendar() {
+  const hist  = fastHistory();
+  const state = fastState();
+  const now   = new Date();
+  const year = now.getFullYear(), month = now.getMonth();
+  const firstDay    = new Date(year, month, 1);
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const DAY_NAMES   = ['M','T','W','T','F','S','S'];
+
+  const allFasts = [
+    ...hist.map(f => ({ start: new Date(f.startTime), end: new Date(f.endTime) })),
+    ...(state ? [{ start: new Date(state.startTime), end: new Date() }] : []),
+  ];
+
+  const startDow = (firstDay.getDay() + 6) % 7; // Mon=0
+  const cells = [];
+  for (let i = 0; i < startDow; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dStart = new Date(year, month, d, 0, 0, 0, 0);
+    const dEnd   = new Date(year, month, d, 23, 59, 59, 999);
+    let maxPhaseId = -1;
+    for (const fast of allFasts) {
+      if (fast.end < dStart || fast.start > dEnd) continue;
+      const hrs = (Math.min(dEnd.getTime(), fast.end.getTime()) - fast.start.getTime()) / 3600000;
+      const ph  = getPhase(Math.max(0, hrs));
+      if (ph.id > maxPhaseId) maxPhaseId = ph.id;
+    }
+    cells.push({ d, phaseId: maxPhaseId, isToday: d === now.getDate() });
+  }
+
+  const header = DAY_NAMES.map(n => `<div class="cal-dow">${n}</div>`).join('');
+  const grid   = cells.map(cell => {
+    if (!cell) return `<div class="cal-cell empty"></div>`;
+    const ph   = cell.phaseId >= 0 ? PHASES[cell.phaseId] : null;
+    const styl = ph ? ` style="background:${ph.color}1a;border-color:${ph.color}55"` : '';
+    const cls  = ['cal-cell', ph ? 'fasted' : '', cell.isToday ? 'today' : ''].filter(Boolean).join(' ');
+    const dot  = ph ? `<span class="cal-dot" style="background:${ph.color}"></span>` : '';
+    return `<div class="${cls}"${styl}><span class="cal-day">${cell.d}</span>${dot}</div>`;
+  }).join('');
+
+  const legend = PHASES.map(p =>
+    `<span><span style="color:${p.color}">●</span> <span style="color:var(--text3)">${p.name.split(' ')[0]}</span></span>`
+  ).join('');
+
+  return `<div class="card fade">
+    <div class="card-lbl">📅 ${MONTH_NAMES[month]} ${year}</div>
+    <div class="cal-grid">${header}${grid}</div>
+    <div class="cal-legend">${legend}</div>
+  </div>`;
 }
 
 // ── Main render ────────────────────────────────────────────────────
@@ -158,6 +213,7 @@ function buildHistorySection() {
   return `
     <div style="margin-top:24px">
       <div class="card-lbl" style="padding:0 2px 6px;font-size:.75rem;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;">📚 Fast History</div>
+      ${buildFastingCalendar()}
       ${buildHistoryStats(hist)}
       ${hist.length > 1 ? buildTrendChart(hist) : ''}
       ${hist.length > 1 ? buildComparisonTable(hist) : ''}

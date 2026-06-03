@@ -1,7 +1,7 @@
 // sw.js — Service Worker for FastTrack v3
 // v3.0.0
 
-const CACHE_VERSION = 'ft3-v3.1';
+const CACHE_VERSION = 'ft3-v3.2';
 const CACHE_FILES = [
   '/fasttrack/fasttrack3/',
   '/fasttrack/fasttrack3/index.html',

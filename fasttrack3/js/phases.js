@@ -1,5 +1,5 @@
 // phases.js — PHASES array, STRUGGLING data, helpers
-// v3.0.0 — no deps
+// v3.2.0 — no deps
 
 export const PHASES = [
   { id:0, h0:0,   h1:12,       color:'#55556a', icon:'🔋', range:'0 – 12h',  name:'Fuel Transition',

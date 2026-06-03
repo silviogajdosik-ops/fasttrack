@@ -1,5 +1,5 @@
 // badges.js — badge definitions, check logic, rack/grid builders
-// v3.0.0 — imports: storage, ui
+// v3.2.0 — imports: storage, ui
 
 import { fastState, earnedBadges, saveEarnedBadges, ls, K } from './storage.js?v=3.0';
 import { toast } from './ui.js?v=3.0';
@@ -83,19 +83,21 @@ export function checkLifetimeBadges() {
 }
 
 export function showBadgeToast(badge) {
-  const w = document.getElementById('toast-wrap');
-  if (!w) return;
-  const el = document.createElement('div');
-  el.className = 'toast badge-toast';
-  el.style.setProperty('--bc', badge.color);
-  el.innerHTML = `<div class="bt-icon" style="color:${badge.color}">${badge.icon}</div>
-    <div>
-      <div class="bt-title">Badge Unlocked!</div>
-      <div class="bt-name" style="color:${badge.color}">${badge.name}</div>
-      <div class="bt-desc">${badge.desc}</div>
+  // Full-screen overlay for milestones
+  const overlay = document.createElement('div');
+  overlay.className = 'badge-unlock-overlay';
+  overlay.innerHTML = `
+    <div class="bum-card" style="border-color:${badge.color}44">
+      <span class="bum-icon" style="filter:drop-shadow(0 0 20px ${badge.color})">${badge.icon}</span>
+      <div class="bum-label">Achievement Unlocked!</div>
+      <div class="bum-name" style="color:${badge.color}">${badge.name}</div>
+      <div class="bum-desc">${badge.desc}</div>
+      <button class="btn btn-ghost btn-sm" style="border-color:${badge.color};color:${badge.color};max-width:160px;margin:0 auto">✓ &nbsp;Nice!</button>
     </div>`;
-  w.appendChild(el);
-  setTimeout(() => el.remove(), 5000);
+  document.body.appendChild(overlay);
+  overlay.querySelector('button').addEventListener('click', () => overlay.remove());
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  setTimeout(() => overlay?.remove(), 6000);
 }
 
 export function buildBadgeRack() {

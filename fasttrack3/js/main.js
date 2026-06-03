@@ -1,16 +1,16 @@
 // main.js — entry point: imports, init, glue, event listeners
 // v3.1.0
 
-import { APP_VERSION, K, ls, fastState, checkins, doneFast, fastHistory, getProfile, migrateLegacy } from './storage.js?v=3.1';
-import { checkLifetimeBadges, buildBadgeGrid } from './badges.js?v=3.1';
-import { showTab, onTab, openModal, closeModal, onModalOpen, showScreen, updateHeaderName, toast, fmtDate, fmtDurStr, dtLocalStr, moveNavPill } from './ui.js?v=3.1';
-import { renderHome, startTimer, stopTimer } from './fasting.js?v=3.1';
-import { initCIForm, renderCIHistory, initCheckinEvents } from './checkin.js?v=3.1';
-import { initJournal, initJournalEvents } from './journal.js?v=3.1';
-import { openStrugglingModal, initStrugglingEvents } from './struggling.js?v=3.1';
-import { renderReport, initReportEvents } from './report.js?v=3.1';
-import { initNotifications, renderNotifSettings, checkPhaseMilestone } from './notifications.js?v=3.1';
-import { renderGFitSection, loadGISScript } from './gfit.js?v=3.1';
+import { APP_VERSION, K, ls, fastState, checkins, doneFast, fastHistory, getProfile, migrateLegacy } from './storage.js?v=3.2';
+import { checkLifetimeBadges, buildBadgeGrid } from './badges.js?v=3.2';
+import { showTab, onTab, openModal, closeModal, onModalOpen, showScreen, updateHeaderName, toast, fmtDate, fmtDurStr, dtLocalStr, moveNavPill } from './ui.js?v=3.2';
+import { renderHome, startTimer, stopTimer } from './fasting.js?v=3.2';
+import { initCIForm, renderCIHistory, initCheckinEvents } from './checkin.js?v=3.2';
+import { initJournal, initJournalEvents } from './journal.js?v=3.2';
+import { openStrugglingModal, initStrugglingEvents } from './struggling.js?v=3.2';
+import { renderReport, initReportEvents } from './report.js?v=3.2';
+import { initNotifications, renderNotifSettings, checkPhaseMilestone } from './notifications.js?v=3.2';
+import { renderGFitSection, loadGISScript } from './gfit.js?v=3.2';
 
 // ── Register tab renderers ─────────────────────────────────────────
 onTab('home',    () => renderHome(getProfile()));

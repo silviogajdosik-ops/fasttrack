@@ -1,10 +1,10 @@
 // fasting.js — timer, tick, active/idle screen builders, quote fetch
 // v3.1.0 — imports: storage, phases, badges, ui
 
-import { K, ls, fastState, checkins, doneFast, earnedBadges } from './storage.js?v=3.1';
-import { PHASES, getPhase, phaseProgress } from './phases.js?v=3.1';
-import { checkBadges, buildBadgeRack } from './badges.js?v=3.1';
-import { fmtDate, fmtDurStr } from './ui.js?v=3.1';
+import { K, ls, fastState, checkins, doneFast, earnedBadges, fastHistory } from './storage.js?v=3.2';
+import { PHASES, getPhase, phaseProgress } from './phases.js?v=3.2';
+import { checkBadges, buildBadgeRack } from './badges.js?v=3.2';
+import { fmtDate, fmtDurStr } from './ui.js?v=3.2';
 
 let timerID = null;
 
@@ -205,11 +205,26 @@ export function buildIdleScreen(profile) {
     ? `<p style="text-align:center;color:var(--text3);font-size:.75rem;margin-bottom:10px;">Last fast: ${fmtDurStr(done.durationMs)}</p>`
     : '';
 
+  const hist   = fastHistory();
+  const now2   = new Date();
+  const thisMo = hist.filter(f => {
+    const e = new Date(f.endTime);
+    return e.getMonth() === now2.getMonth() && e.getFullYear() === now2.getFullYear();
+  }).length;
+  const totalF  = hist.length;
+  const bestMs  = hist.length ? Math.max(...hist.map(f => f.durationMs)) : 0;
+  const streakHtml = totalF > 0 ? `<div class="streak-strip">
+    <div class="st-item"><span class="st-n">${thisMo}</span><span class="st-l">this month</span></div>
+    <div class="st-sep">·</div>
+    <div class="st-item"><span class="st-n">${totalF}</span><span class="st-l">total fasts</span></div>
+    ${bestMs ? `<div class="st-sep">·</div><div class="st-item"><span class="st-n" style="color:var(--gold)">${fmtDurStr(bestMs).replace('m','').trim()}</span><span class="st-l">best</span></div>` : ''}
+  </div>` : '';
+
   return `<div class="start-hero fade">
     <span class="sh-icon">⚡</span>
     <h2 class="sh-title">Ready, ${name}?</h2>
     <p class="sh-sub">Your next metabolic transformation awaits. The timer can be set to any start time — even if your fast already began.</p>
-    ${doneNote}
+    ${streakHtml}${doneNote}
     <div class="ac">
       <button class="btn btn-primary" id="btn-start-fast">🚀 &nbsp;Start Fast</button>
       <button class="btn btn-ghost"   id="btn-goto-checkin">📊 &nbsp;Log a Check-in</button>

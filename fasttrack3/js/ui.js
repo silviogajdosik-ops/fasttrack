@@ -1,7 +1,7 @@
 // ui.js — modali, toast, tab nav, nav pill, date helpers
-// v3.0.0 — imports: storage
+// v3.2.0 — imports: storage
 
-import { getProfile } from './storage.js?v=3.0';
+import { getProfile } from './storage.js?v=3.2';
 
 // ── Tab renderer registry (registered by main.js) ──────────────────
 const _tabRenderers = {};

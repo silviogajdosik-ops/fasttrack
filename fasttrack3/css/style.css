@@ -1,5 +1,5 @@
 /* style.css — FastTrack v3 — Mobile-First Dark PWA */
-/* v3.1 */
+/* v3.2 */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -532,3 +532,50 @@ input[type=datetime-local]::-webkit-calendar-picker-indicator { filter: invert(.
 .empty { text-align: center; color: var(--text3); font-size: .84rem; padding: 18px; }
 ::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 100px; }
+
+/* ── Fasting calendar ───────────────────────────────────────────── */
+.cal-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 10px;
+}
+.cal-dow { font-size:.62rem; color:var(--text3); text-align:center; padding:3px 0 5px; font-weight:600; }
+.cal-cell {
+  aspect-ratio:1; border-radius:6px; border:1px solid transparent;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  position:relative; background:var(--surf2); transition:border-color .2s;
+}
+.cal-cell.empty { background:transparent; border-color:transparent; }
+.cal-cell.today { border-color:var(--cyan) !important; }
+.cal-day { font-size:.68rem; line-height:1; color:var(--text3); }
+.cal-cell.fasted .cal-day { color:var(--text); font-weight:700; }
+.cal-dot { width:4px; height:4px; border-radius:50%; position:absolute; bottom:3px; }
+.cal-legend { display:flex; flex-wrap:wrap; gap:4px 10px; font-size:.6rem; margin-top:6px; }
+
+/* ── Streak strip (idle screen) ─────────────────────────────────── */
+.streak-strip {
+  display:flex; justify-content:center; align-items:center; gap:8px;
+  margin: -4px 0 14px; flex-wrap:wrap;
+}
+.st-item { display:flex; flex-direction:column; align-items:center; gap:1px; }
+.st-n    { font-size:1.2rem; font-weight:800; color:var(--cyan); line-height:1; }
+.st-l    { font-size:.58rem; color:var(--text3); text-transform:uppercase; letter-spacing:.08em; }
+.st-sep  { color:var(--border); font-size:.9rem; }
+
+/* ── Badge unlock overlay ───────────────────────────────────────── */
+.badge-unlock-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.88);
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  z-index:500; display:flex; align-items:center; justify-content:center;
+  padding:24px; animation:fade-in .2s ease;
+}
+@keyframes fade-in { from{opacity:0} to{opacity:1} }
+.bum-card {
+  background:var(--surf); border:1.5px solid var(--border);
+  border-radius:22px; padding:36px 26px; text-align:center;
+  max-width:320px; width:100%;
+  animation:badge-burst .45s cubic-bezier(.34,1.56,.64,1);
+}
+.bum-icon  { font-size:5rem; line-height:1; margin-bottom:14px; display:block; }
+.bum-label { font-size:.62rem; color:var(--text3); text-transform:uppercase; letter-spacing:.16em; margin-bottom:8px; }
+.bum-name  { font-size:1.35rem; font-weight:800; line-height:1.2; margin-bottom:8px; }
+.bum-desc  { font-size:.84rem; color:var(--text2); line-height:1.6; margin-bottom:20px; }
+
